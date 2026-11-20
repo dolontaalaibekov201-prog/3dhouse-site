@@ -311,6 +311,9 @@ markup = markup[:k] + SEOTXT + SMAP + markup[k:]
 index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE) + ld(WEBSITE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n</body></html>\n' % ver
 open(os.path.join(dist, "index.html"), "w", encoding="utf-8").write(index)
 
+# ---------- готовые файлы (карточки для объявлений) ----------
+if os.path.isdir(os.path.join(root, "static")): shutil.copytree(os.path.join(root, "static"), dist, dirs_exist_ok=True)
+
 # ---------- служебные файлы ----------
 today = datetime.date.today().isoformat()
 urls = [("/", "1.0")] + [(u, "0.9") for u in extra] + [(p[1], "0.8") for p in pages]
