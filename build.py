@@ -60,6 +60,8 @@ SLUG = {"a1mini": "bambu-lab-a1-mini", "a1": "bambu-lab-a1", "a1c": "bambu-lab-a
         "fplus": "pla-plus", "fpro": "pla-pro", "ftr": "pla-translucent", "fglow": "pla-glow", "fwood": "pla-wood", "fmar": "pla-marble",
         "fgal": "pla-galaxy", "fspk": "pla-sparkle", "fpm": "petg-matte", "fps": "petg-sparkle", "fblb": "bambu-lab-pla-basic", "fblm": "bambu-lab-pla-matte"}
 CATNAME = {"printers": ("3D-принтеры", "printers"), "filament": ("Пластик для 3D-печати", "filament"), "ams": ("Аксессуары", "ams")}
+CATPATH = {"printers": "/3d-printery/", "filament": "/plastik-dlya-3d-pechati/"}
+DEFCAT = "/aksessuary/"
 nf = lambda n: ("%d" % n if n < 10000 else "{:,}".format(n).replace(",", " "))
 e = html.escape
 
@@ -90,8 +92,6 @@ ld = lambda o: '<script type="application/ld+json">' + json.dumps(o, ensure_asci
 
 # ---------- главная ----------
 hero = re.search(r'class="heroimg"[^>]*>\s*<img[^>]*src="([^"]+)"', markup)
-index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n</body></html>\n' % ver
-open(os.path.join(dist, "index.html"), "w", encoding="utf-8").write(index)
 
 # ---------- страницы товаров ----------
 PCSS = """
@@ -116,12 +116,15 @@ PCSS = """
 .pgmore a{display:block;background:#fff;border:1px solid var(--line2);border-radius:18px;padding:16px 18px;font-weight:700}
 .pgmore a span{display:block;font-weight:600;font-size:13.5px;color:var(--mut);margin-top:4px}
 @media(max-width:760px){.pgrid{grid-template-columns:1fr;gap:22px}.pg{padding:18px 16px 60px}}
+@media(max-width:760px){header .hd{display:flex;flex-wrap:wrap;height:auto;padding:10px 16px 6px;gap:4px 12px;align-items:center}
+header .hd .logo{order:1}header .hd>span{order:2}header .hd .phone{order:3;display:block;font-size:13px}
+header .hd .nav{order:4;width:100%;overflow-x:auto;white-space:nowrap;margin:0 -6px;scrollbar-width:none}header .hd .nav a{padding:6px 8px;font-size:13.5px}}
 """
 HDR = ('<header><div class="wrap hd"><a class="logo" href="/" aria-label="3D HOUSE"><span class="wm2"><b>3D</b> HOUSE</span></a>'
-       '<nav class="nav" style="display:flex"><a href="/#printers">Принтеры</a><a href="/#filament">Пластик</a><a href="/#parts">Запчасти</a><a href="/#videos">Видеоуроки</a></nav>'
+       '<nav class="nav" style="display:flex"><a href="/3d-printery/">Принтеры</a><a href="/plastik-dlya-3d-pechati/">Пластик</a><a href="/aksessuary/">Аксессуары</a><a href="/voprosy/">Вопросы</a><a href="/kontakty/">Контакты</a></nav>'
        '<span style="flex:1"></span><a class="phone" href="tel:+%s">%s</a></div></header>' % (WA, PHONE))
 FTR = ('<footer><div class="wrap fg"><div><a class="logo" href="/"><span class="wm2"><b>3D</b> HOUSE</span></a><p>Дом для 3D-печати: принтеры, пластик, сервис и обучение.</p></div>'
-       '<div><b>Шоурум</b><p>%s<br>ежедневно 10:00–20:00</p></div><div><b>Каталог</b><p><a href="/#printers">Принтеры</a> · <a href="/#filament">Пластик</a> · <a href="/#parts">Запчасти</a></p></div>'
+       '<div><b>Шоурум</b><p>%s<br>ежедневно 10:00–20:00</p></div><div><b>Каталог</b><p><a href="/3d-printery/">3D-принтеры</a> · <a href="/plastik-dlya-3d-pechati/">Пластик</a> · <a href="/aksessuary/">Аксессуары</a><br><a href="/voprosy/">Вопросы и ответы</a> · <a href="/kontakty/">Контакты</a></p></div>'
        '<div><b>Связь</b><p><a href="https://wa.me/%s">WhatsApp %s</a><br><a href="https://instagram.com/3dhouse.kg">Instagram @3dhouse.kg</a></p></div></div></footer>' % (ADDR, WA, PHONE))
 
 pages = []
@@ -160,21 +163,118 @@ for pid, k in CRM.items():
     else: prod["offers"]["price"] = price
     if c["img"]: prod["image"] = SITE + c["img"]
     crumbs = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
-        {"@type": "ListItem", "position": 1, "name": "3D HOUSE", "item": SITE + "/"}, {"@type": "ListItem", "position": 2, "name": catn, "item": SITE + "/#" + anchor}, {"@type": "ListItem", "position": 3, "name": name}]}
+        {"@type": "ListItem", "position": 1, "name": "3D HOUSE", "item": SITE + "/"}, {"@type": "ListItem", "position": 2, "name": catn, "item": SITE + CATPATH.get(c["cat"], DEFCAT)}, {"@type": "ListItem", "position": 3, "name": name}]}
     pages.append((pid, path, name, price, c["cat"], fil, title, desc, c["img"], b, r, ld(prod) + ld(crumbs), catn, anchor))
 
 for pid, path, name, price, cat, fil, title, desc, img, b, r, lds, catn, anchor in pages:
     more = [p for p in pages if p[4] == cat and p[0] != pid][:8]
     out = (head(title, desc, path, img, "<style>%s</style>\n%s" % (PCSS, lds)) + "<body>\n" + HDR +
-           '<main class="pg"><p class="crumbs"><a href="/">Главная</a> / <a href="/#%s">%s</a> / %s</p><div class="pgrid">%s<div>%s</div></div>' % (anchor, e(catn), e(name), "".join(b), "".join(r)) +
+           '<main class="pg"><p class="crumbs"><a href="/">Главная</a> / <a href="%s">%s</a> / %s</p><div class="pgrid">%s<div>%s</div></div>' % (CATPATH.get(cat, DEFCAT), e(catn), e(name), "".join(b), "".join(r)) +
            ('<h2>Ещё в разделе «%s»</h2><div class="pgmore">%s</div>' % (e(catn), "".join('<a href="%s">%s<span>%s%s сом</span></a>' % (p[1], e(p[2]), "от " if p[5] else "", nf(p[3])) for p in more)) if more else "") +
            "</main>" + FTR + "</body></html>\n")
     d = os.path.join(dist, path.strip("/")); os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(out)
 
+
+# ---------- разделы, вопросы, контакты ----------
+extra = []
+def page(path, title, desc, inner, lds="", img=None):
+    out = head(title, desc, path, img, "<style>%s%s</style>\n%s" % (PCSS, XCSS, lds)) + "<body>\n" + HDR + '<main class="pg">' + inner + "</main>" + FTR + "</body></html>\n"
+    d = os.path.join(dist, path.strip("/")); os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(out); extra.append(path)
+XCSS = """
+.clist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:8px}
+.clist a{display:flex;flex-direction:column;background:#fff;border:1px solid var(--line2);border-radius:20px;padding:12px 12px 16px;font-weight:700}
+.clist a i{display:block;aspect-ratio:1/1;border-radius:14px;background:var(--alt);overflow:hidden;margin-bottom:12px}
+.clist a i img{width:100%;height:100%;object-fit:contain;mix-blend-mode:multiply}
+.clist a span{font-weight:600;font-size:13.5px;color:var(--mut);margin-top:4px}
+.clist a em{font-style:normal;font-family:'Unbounded',sans-serif;font-weight:800;font-size:17px;margin-top:10px}
+.clist a em small{font-family:'Manrope',sans-serif;font-size:12.5px;font-weight:700;color:var(--mut)}
+.faq details{background:#fff;border:1px solid var(--line2);border-radius:18px;padding:16px 20px;margin-bottom:10px}
+.faq summary{font-weight:700;font-size:16.5px;cursor:pointer}.faq details p{margin:10px 0 0}
+.pg .lead{max-width:70ch}
+@media(max-width:760px){.clist{grid-template-columns:1fr 1fr;gap:10px}.clist a{padding:8px 8px 12px;border-radius:16px;font-size:14px}}
+"""
+def clist(ps):
+    return '<div class="clist">' + "".join(
+        '<a href="%s">%s%s<span>%s</span><em>%s%s <small>сом</small></em></a>' % (
+            p[1], ('<i><img src="%s" alt="%s" loading="lazy" width="300" height="300"></i>' % (p[8], e(p[2]))) if p[8] else "", e(p[2]),
+            "в наличии" if CRM[p[0]]["q"] > 0 else "под заказ", "<small>от</small> " if p[5] else "", nf(p[3])) for p in ps) + "</div>"
+def itemlist(ps):
+    return ld({"@context": "https://schema.org", "@type": "ItemList", "itemListElement": [
+        {"@type": "ListItem", "position": i + 1, "name": p[2], "url": SITE + p[1]} for i, p in enumerate(ps)]})
+def crumb2(name, path):
+    return ld({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "3D HOUSE", "item": SITE + "/"}, {"@type": "ListItem", "position": 2, "name": name, "item": SITE + path}]})
+PR = [p for p in pages if p[4] == "printers"]; FI = [p for p in pages if p[4] == "filament"]; AC = [p for p in pages if p[4] not in ("printers", "filament")]
+kg = [p[3] for p in FI if any(x[5] == "1 кг" and x[3] == p[3] for x in CRM[p[0]].get("v", []))]
+FILMIN = min(kg) if kg else min(p[3] for p in FI)
+SHIP = "<h2>Доставка и самовывоз</h2><p>Самовывоз из шоурума: %s, ежедневно 10:00–20:00. В регионы Кыргызстана отправляем через «Ылдам Экспресс» — доставка занимает 1 день.</p>" % ADDR
+WABTN = '<div class="pgbtns" style="margin-top:26px"><a class="btn" href="https://wa.me/%s" target="_blank" rel="noopener">Написать в WhatsApp</a><a class="btn ghost" href="/">Весь каталог</a></div>' % WA
+if PR:
+    page("/3d-printery/", "3D-принтеры в Бишкеке — купить Bambu Lab, цены от %s сом | 3D HOUSE" % nf(min(p[3] for p in PR)),
+         "3D-принтеры в Бишкеке: %d моделей Bambu Lab, Snapmaker и FlashForge от %s сом. Шоурум, гарантия 1 год, запуск и обучение, рассрочка, доставка по Кыргызстану за 1 день." % (len(PR), nf(min(p[3] for p in PR))),
+         '<p class="crumbs"><a href="/">Главная</a> / 3D-принтеры</p><h1>3D-принтеры в Бишкеке</h1>'
+         '<p class="lead">%d моделей в шоуруме 3D HOUSE — от %s сом. К каждому принтеру дарим 1 кг пластика, настраиваем и показываем, как печатать. Гарантия 1 год, сервис в Бишкеке.</p>' % (len(PR), nf(min(p[3] for p in PR))) +
+         clist(PR) +
+         "<h2>Как выбрать 3D-принтер</h2><p>Новичку и для ребёнка подойдёт простая открытая модель — Bambu Lab A1 или A1 mini. Для многоцветной печати берите комплект Combo: в нём есть система подачи нескольких катушек. Для бизнеса и инженерных пластиков — закрытые модели P1S и X2D.</p>"
+         "<h2>Китайская и глобальная версия</h2><p>Китайской версии принтера нужны компьютер и Wi-Fi — к телефону и планшету она не подключается. Глобальная (EU) версия подключается к телефону. Версия указана в названии модели.</p>" + SHIP + WABTN,
+         itemlist(PR) + crumb2("3D-принтеры", "/3d-printery/"), PR[0][8])
+if FI:
+    page("/plastik-dlya-3d-pechati/", "Пластик для 3D-печати в Бишкеке — PLA, PETG, TPU от %s сом за кг | 3D HOUSE" % nf(FILMIN),
+         "Пластик для 3D-принтера в Бишкеке: PLA, PETG, TPU, ASA — %d серий, от %s сом за катушку 1 кг. Наличие по цветам, самовывоз и доставка по Кыргызстану за 1 день." % (len(FI), nf(FILMIN)),
+         '<p class="crumbs"><a href="/">Главная</a> / Пластик для 3D-печати</p><h1>Пластик для 3D-печати в Бишкеке</h1>'
+         '<p class="lead">%d серий филамента: PLA, PETG, TPU и ASA. Катушка 1 кг — от %s сом. На странице каждой серии — цвета и наличие.</p>' % (len(FI), nf(FILMIN)) +
+         clist(FI) +
+         "<h2>Какой пластик выбрать</h2><p>PLA — универсальный: сувениры, прототипы, игрушки. PETG прочнее PLA и не боится улицы. TPU — гибкий: чехлы, прокладки, ремешки. ASA не выгорает на солнце. Не уверены — напишите, что хотите печатать, подскажем.</p>" + SHIP + WABTN,
+         itemlist(FI) + crumb2("Пластик для 3D-печати", "/plastik-dlya-3d-pechati/"), FI[0][8])
+if AC:
+    page("/aksessuary/", "Аксессуары для 3D-принтера в Бишкеке | 3D HOUSE",
+         "Аксессуары для 3D-печати в Бишкеке: %s. Самовывоз из шоурума и доставка по Кыргызстану." % ", ".join(p[2] for p in AC),
+         '<p class="crumbs"><a href="/">Главная</a> / Аксессуары</p><h1>Аксессуары для 3D-принтера в Бишкеке</h1>'
+         '<p class="lead">То, что пригодится при печати: система подачи пластика, инструмент и расходники.</p>' + clist(AC) + SHIP + WABTN,
+         itemlist(AC) + crumb2("Аксессуары", "/aksessuary/"), AC[0][8])
+FAQ = [
+ ("Где купить 3D-принтер в Бишкеке?", "В шоуруме 3D HOUSE: %s, ежедневно с 10:00 до 20:00. Принтер можно посмотреть вживую до покупки." % ADDR),
+ ("Какой 3D-принтер выбрать новичку?", "Простую открытую модель — Bambu Lab A1 или A1 mini. Для многоцветной печати — комплект Combo. Для бизнеса и инженерных пластиков — закрытые модели P1S и X2D."),
+ ("Чем китайская версия принтера отличается от глобальной?", "Китайской версии нужны компьютер и Wi-Fi — к телефону и планшету она не подключается. Глобальная (EU) версия подключается к телефону."),
+ ("Сколько стоит 3D-принтер?", "От %s сом. Актуальные цены и наличие — на страницах моделей." % nf(min(p[3] for p in PR)) if PR else ""),
+ ("Сколько стоит пластик для 3D-печати?", "От %s сом за катушку 1 кг. К принтеру дарим 1 кг пластика." % nf(FILMIN)),
+ ("Есть ли гарантия?", "Да, гарантия 1 год, сервис в Бишкеке. При покупке настраиваем принтер и показываем, как печатать."),
+ ("Можно ли купить в рассрочку?", "Да, есть рассрочка на 3 месяца через М+ (Мбанк), Пайда и Зеро. Точные условия уточняйте в WhatsApp."),
+ ("Доставляете ли вы по Кыргызстану?", "Да, в регионы отправляем через курьерскую службу «Ылдам Экспресс». Доставка занимает 1 день и стоит около 1 000–1 500 сом, точная сумма зависит от города."),
+ ("Что делать, если нужной модели нет в наличии?", "Привезём под заказ в течение 4 дней, возможно раньше."),
+ ("Какой пластик выбрать?", "PLA — универсальный, для сувениров и прототипов. PETG прочнее и не боится улицы. TPU — гибкий. ASA не выгорает на солнце."),
+]
+FAQ = [f for f in FAQ if f[1]]
+page("/voprosy/", "Вопросы и ответы о 3D-принтерах и пластике | 3D HOUSE, Бишкек",
+     "Где купить 3D-принтер в Бишкеке, какую модель выбрать, сколько стоит пластик, гарантия, рассрочка и доставка по Кыргызстану — ответы магазина 3D HOUSE.",
+     '<p class="crumbs"><a href="/">Главная</a> / Вопросы и ответы</p><h1>Вопросы и ответы</h1><div class="faq" style="margin-top:22px">' +
+     "".join("<details%s><summary>%s</summary><p>%s</p></details>" % (" open" if i < 3 else "", e(q), e(a)) for i, (q, a) in enumerate(FAQ)) + "</div>" + WABTN,
+     ld({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in FAQ]}) + crumb2("Вопросы и ответы", "/voprosy/"))
+page("/kontakty/", "Контакты и адрес шоурума 3D HOUSE в Бишкеке",
+     "Шоурум 3D-принтеров 3D HOUSE: %s. Ежедневно 10:00–20:00. Телефон и WhatsApp %s." % (ADDR, PHONE),
+     '<p class="crumbs"><a href="/">Главная</a> / Контакты</p><h1>Контакты 3D HOUSE</h1>'
+     '<p class="lead">Шоурум 3D-принтеров и пластика в Бишкеке. Приезжайте посмотреть принтеры вживую.</p>'
+     "<h2>Адрес</h2><p>%s</p><h2>Часы работы</h2><p>Ежедневно, 10:00–20:00</p>"
+     '<h2>Телефон и WhatsApp</h2><p><a href="tel:+%s">%s</a> · <a href="https://wa.me/%s">написать в WhatsApp</a></p>'
+     '<h2>Instagram</h2><p><a href="https://instagram.com/3dhouse.kg">@3dhouse.kg</a></p>' % (ADDR, WA, PHONE, WA) + SHIP,
+     ld(STORE) + crumb2("Контакты", "/kontakty/"))
+
+# ---------- главная (со ссылками на все страницы) ----------
+SMAP = ('<section class="wrap" style="padding-top:56px"><h2 style="font-size:22px;margin:0 0 16px">Каталог 3D HOUSE</h2>'
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;font-size:14.5px;line-height:1.9">' +
+        "".join('<div><a href="%s" style="font-weight:800">%s</a><br>%s</div>' % (cp, cn, "<br>".join('<a href="%s" style="color:var(--mut)">%s</a>' % (p[1], e(p[2])) for p in ps))
+                for cp, cn, ps in (("/3d-printery/", "3D-принтеры в Бишкеке", PR), ("/plastik-dlya-3d-pechati/", "Пластик для 3D-печати", FI), ("/aksessuary/", "Аксессуары", AC)) if ps) +
+        '<div><b>Покупателю</b><br><a href="/voprosy/" style="color:var(--mut)">Вопросы и ответы</a><br><a href="/kontakty/" style="color:var(--mut)">Контакты и адрес шоурума</a></div></div></section>\n')
+k = markup.rindex("<footer")
+markup = markup[:k] + SMAP + markup[k:]
+index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n</body></html>\n' % ver
+open(os.path.join(dist, "index.html"), "w", encoding="utf-8").write(index)
+
 # ---------- служебные файлы ----------
 today = datetime.date.today().isoformat()
-urls = [("/", "1.0")] + [(p[1], "0.8") for p in pages]
+urls = [("/", "1.0")] + [(u, "0.9") for u in extra] + [(p[1], "0.8") for p in pages]
 open(os.path.join(dist, "sitemap.xml"), "w").write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     "".join("<url><loc>%s%s</loc><lastmod>%s</lastmod><priority>%s</priority></url>\n" % (SITE, u, today, pr) for u, pr in urls) + "</urlset>\n")
 open(os.path.join(dist, "robots.txt"), "w").write("User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % SITE)
