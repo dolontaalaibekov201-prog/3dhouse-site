@@ -61,6 +61,37 @@ def _alt(m):
 markup = re.sub(r'<article class="card.*?</article>', _alt, markup, flags=re.S)
 markup = re.sub(r'(class="heroimg"[^>]*>\s*<img[^>]*?)alt=""', r'\1alt="3D-принтер Bambu Lab в шоуруме 3D HOUSE, Бишкек"', markup)
 
+# ---------- скорость: размеры картинок, ленивая загрузка ----------
+try:
+    from PIL import Image as _PI
+except Exception: _PI = None
+_dim = {}
+def _wh(src):
+    if _PI is None or not src.startswith("/img/"): return None
+    if src not in _dim:
+        try: _dim[src] = _PI.open(os.path.join(dist, src.lstrip("/"))).size
+        except Exception: _dim[src] = None
+    return _dim[src]
+_first = [True]
+def _imgattrs(m):
+    tag = m.group(0); src = re.search(r'src="([^"]+)"', tag)
+    if not src: return tag
+    add = ""
+    wh = _wh(src.group(1))
+    if wh and "width=" not in tag: add += ' width="%d" height="%d"' % wh
+    if _first[0]:
+        _first[0] = False
+        if "fetchpriority" not in tag: add += ' fetchpriority="high"'
+        tag = tag.replace(' loading="lazy"', "")
+    else:
+        if "loading=" not in tag: add += ' loading="lazy"'
+        if "decoding=" not in tag: add += ' decoding="async"'
+    return tag[:-1] + add + ">"
+_hi = markup.index('class="heroimg"')
+markup = markup[:_hi] + re.sub(r"<img\b[^>]*>", _imgattrs, markup[_hi:])
+css += "\nimg{height:auto}\n"
+open(os.path.join(dist, "style.css"), "w", encoding="utf-8").write(css)
+
 # ---------- данные для страниц товаров ----------
 CRM = json.loads(re.search(r"const CRM = (\{.*?\});\s*const CRM_AT", src, re.S).group(1))
 FDESC = json.loads(re.search(r"const FDESC = (\{.*?\});\n", src).group(1))
