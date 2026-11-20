@@ -282,6 +282,8 @@ open(os.path.join(dist, "robots.txt"), "w").write("User-agent: *\nAllow: /\n\nSi
 open(os.path.join(dist, "favicon.svg"), "w").write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#1D1D1F"/><text x="32" y="43" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="28" fill="#FF6A13">3D</text></svg>')
 open(os.path.join(dist, "CNAME"), "w").write("3dhouse.kg\n")
 open(os.path.join(dist, ".nojekyll"), "w").write("")
+# подтверждение прав в Яндекс Вебмастере — файл не удалять
+open(os.path.join(dist, "yandex_ea1a9dc4360e0d48.html"), "w").write('<html>\n    <head>\n        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\n    </head>\n    <body>Verification: ea1a9dc4360e0d48</body>\n</html>\n')
 open(os.path.join(dist, "404.html"), "w", encoding="utf-8").write(head("Страница не найдена | 3D HOUSE", "Такой страницы нет.", "/404.html") + "<body>" + HDR +
     '<main class="wrap" style="padding:90px 22px;text-align:center"><h1 style="font-size:34px">Страница не найдена</h1><p style="color:var(--mut);margin:14px 0 26px">Возможно, товар переехал. Посмотрите каталог.</p><a class="btn" href="/">На главную</a></main>' + FTR + "</body></html>")
 print("ok: %d картинок, %d страниц товаров, index %d КБ" % (len(seen), len(pages), len(index) // 1024))
