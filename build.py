@@ -11,8 +11,9 @@ PHONE = "+996 559 992 306"   # WhatsApp
 TEL = "996505400655"; TELF = "+996 505 400 655"   # телефон для звонков (как в 2ГИС)
 ADDR = "Бишкек, ул. Туголбай Ата, 32Б"
 TITLE = "3D HOUSE — 3D-принтеры Bambu Lab, пластик и сервис в Бишкеке"
-DESC = ("Купить 3D-принтер в Бишкеке: Bambu Lab A1, A2L, P1S, P2S, X2D, Snapmaker U1. Пластик PLA, PETG, TPU от 1 000 сом. "
-        "Шоурум, гарантия 1 год, рассрочка, доставка по Кыргызстану за 1 день.")
+TITLE = "3D-принтеры в Бишкеке — Bambu Lab, пластик PLA и PETG | 3D HOUSE"
+DESC = ("Купить 3D-принтер в Бишкеке: Bambu Lab A1, A2L, P1S, X2D. Пластик PLA, PETG, TPU от 1 000 сом. "
+        "Шоурум, гарантия 1 год, рассрочка, доставка по Кыргызстану.")
 
 root = os.path.dirname(os.path.abspath(__file__))
 src = open(os.path.join(root, "src", "site.html"), encoding="utf-8").read()
@@ -44,6 +45,22 @@ k = rest.rindex("<script>"); markup, js = rest[:k], rest[k + 8: rest.rindex("</s
 open(os.path.join(dist, "app.js"), "w", encoding="utf-8").write(js)
 ver = hashlib.sha1((css + js).encode()).hexdigest()[:8]
 
+# ---------- SEO: один H1 на странице, подписи к картинкам ----------
+_h = markup.index("<h1"); _e = markup.index("</h1>", _h) + 5
+markup = markup[:_e] + re.sub(r"<h1\b([^>]*)>", r'<div class="h1x" role="heading" aria-level="2"\1>', markup[_e:]).replace("</h1>", "</div>")
+markup = re.sub(r'<div class="h1x" role="heading" aria-level="2" class="([^"]*)">', r'<div class="h1x \1" role="heading" aria-level="2">', markup)
+assert markup.count("<h1") == 1
+css = css.replace(".pp-herotext h1", ".pp-herotext .h1x").replace(".pp-filtext h1", ".pp-filtext .h1x").replace("h1 em,", "h1 em,.h1x em,")
+css += "\n.h1x{font-family:'Unbounded',sans-serif;color:var(--ink);text-wrap:balance}\n"
+open(os.path.join(dist, "style.css"), "w", encoding="utf-8").write(css)
+def _alt(m):
+    art = m.group(0); h3 = re.search(r"<h3>(.*?)</h3>", art, re.S)
+    if not h3: return art
+    nm = html.escape(html.unescape(re.sub(r"<[^>]+>", "", h3.group(1)).strip()), quote=True)
+    return art.replace('alt=""', 'alt="%s"' % nm)
+markup = re.sub(r'<article class="card.*?</article>', _alt, markup, flags=re.S)
+markup = re.sub(r'(class="heroimg"[^>]*>\s*<img[^>]*?)alt=""', r'\1alt="3D-принтер Bambu Lab в шоуруме 3D HOUSE, Бишкек"', markup)
+
 # ---------- данные для страниц товаров ----------
 CRM = json.loads(re.search(r"const CRM = (\{.*?\});\s*const CRM_AT", src, re.S).group(1))
 FDESC = json.loads(re.search(r"const FDESC = (\{.*?\});\n", src).group(1))
@@ -63,7 +80,7 @@ SLUG = {"a1mini": "bambu-lab-a1-mini", "a1": "bambu-lab-a1", "a1c": "bambu-lab-a
 CATNAME = {"printers": ("3D-принтеры", "printers"), "filament": ("Пластик для 3D-печати", "filament"), "ams": ("Аксессуары", "ams")}
 CATPATH = {"printers": "/3d-printery/", "filament": "/plastik-dlya-3d-pechati/"}
 DEFCAT = "/aksessuary/"
-nf = lambda n: ("%d" % n if n < 10000 else "{:,}".format(n).replace(",", " "))
+nf = lambda n: "{:,}".format(n).replace(",", "\u00a0")
 e = html.escape
 
 def head(title, desc, path, ogimg=None, extra=""):
@@ -78,6 +95,7 @@ def head(title, desc, path, ogimg=None, extra=""):
 <meta property="og:title" content="%s"><meta property="og:description" content="%s"><meta property="og:url" content="%s%s">%s
 <meta name="theme-color" content="#FBFAF7">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 %s<link rel="stylesheet" href="/style.css?v=%s">
 %s</head>
 """ % (e(title), e(desc), SITE, path, e(title), e(desc), SITE, path,
@@ -90,6 +108,7 @@ STORE = {"@context": "https://schema.org", "@type": "Store", "@id": SITE + "/#st
          "openingHoursSpecification": {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], "opens": "10:00", "closes": "20:00"},
          "sameAs": ["https://instagram.com/3dhouse.kg"], "areaServed": {"@type": "Country", "name": "Кыргызстан"}}
 ld = lambda o: '<script type="application/ld+json">' + json.dumps(o, ensure_ascii=False) + "</script>\n"
+WEBSITE = {"@context": "https://schema.org", "@type": "WebSite", "@id": SITE + "/#site", "url": SITE + "/", "name": "3D HOUSE", "alternateName": ["3dhouse.kg", "3Д Хаус"], "inLanguage": "ru", "publisher": {"@id": SITE + "/#store"}}
 
 # ---------- главная ----------
 hero = re.search(r'class="heroimg"[^>]*>\s*<img[^>]*src="([^"]+)"', markup)
@@ -135,10 +154,15 @@ for pid, k in CRM.items():
     path = "/catalog/%s/" % SLUG[pid]; fil = bool(k.get("v")); price = k["p"]; q = k["q"]
     kind = "пластик для 3D-печати" if fil else ("3D-принтер" if c["cat"] == "printers" else "")
     h1 = ("%s — %s в Бишкеке" % (name, kind)) if kind else ("%s в Бишкеке" % name)
-    title = "%s — купить в Бишкеке, цена %s%s сом | 3D HOUSE" % (name, "от " if fil else "", nf(price))
+    if fil: title = "Пластик %s — купить в Бишкеке от %s сом | 3D HOUSE" % (name, nf(price))
+    elif c["cat"] == "printers": title = "3D-принтер %s — купить в Бишкеке, %s сом" % (name, nf(price))
+    else: title = "%s — купить в Бишкеке, %s сом | 3D HOUSE" % (name, nf(price))
     lead = FDESC.get(pid) or (k.get("d") or c["d"])
     desc = "%s в Бишкеке: %s%s сом, %s. %s Шоурум 3D HOUSE, доставка по Кыргызстану за 1 день." % (
         name, "от " if fil else "", nf(price), "в наличии" if q > 0 else "под заказ", lead.rstrip(".") + ".")
+    if len(desc) > 160:
+        desc = "%s в Бишкеке: %s%s сом, %s. %s" % (name, "от " if fil else "", nf(price), "в наличии" if q > 0 else "под заказ", lead.rstrip(".") + ".")
+    if len(desc) > 160: desc = desc[:157].rsplit(" ", 1)[0].rstrip(",.;:") + "…"
     wa = "https://wa.me/%s?text=%s" % (WA, __import__("urllib.parse").parse.quote("Здравствуйте! Интересует %s (%s сом)." % (name, nf(price))))
     b = ['<div class="pgimg%s">%s</div>' % ("" if c["img"] else " ph-none", '<img src="%s" alt="%s" width="600" height="600">' % (c["img"], e(name)) if c["img"] else "<span>%s</span>" % e(name.split()[-1]))]
     r = ["<h1>%s</h1>" % e(h1), '<p class="lead">%s</p>' % e(lead),
@@ -213,7 +237,7 @@ FILMIN = min(kg) if kg else min(p[3] for p in FI)
 SHIP = "<h2>Доставка и самовывоз</h2><p>Самовывоз из шоурума: %s, ежедневно 10:00–20:00. В регионы Кыргызстана отправляем через «Ылдам Экспресс» — доставка занимает 1 день.</p>" % ADDR
 WABTN = '<div class="pgbtns" style="margin-top:26px"><a class="btn" href="https://wa.me/%s" target="_blank" rel="noopener">Написать в WhatsApp</a><a class="btn ghost" href="/">Весь каталог</a></div>' % WA
 if PR:
-    page("/3d-printery/", "3D-принтеры в Бишкеке — купить Bambu Lab, цены от %s сом | 3D HOUSE" % nf(min(p[3] for p in PR)),
+    page("/3d-printery/", "3D-принтеры в Бишкеке — купить Bambu Lab от %s сом | 3D HOUSE" % nf(min(p[3] for p in PR)),
          "3D-принтеры в Бишкеке: %d моделей Bambu Lab, Snapmaker и FlashForge от %s сом. Шоурум, гарантия 1 год, запуск и обучение, рассрочка, доставка по Кыргызстану за 1 день." % (len(PR), nf(min(p[3] for p in PR))),
          '<p class="crumbs"><a href="/">Главная</a> / 3D-принтеры</p><h1>3D-принтеры в Бишкеке</h1>'
          '<p class="lead">%d моделей в шоуруме 3D HOUSE — от %s сом. К каждому принтеру дарим 1 кг пластика, настраиваем и показываем, как печатать. Гарантия 1 год, сервис в Бишкеке.</p>' % (len(PR), nf(min(p[3] for p in PR))) +
@@ -222,7 +246,7 @@ if PR:
          "<h2>Китайская и глобальная версия</h2><p>Китайской версии принтера нужны компьютер и Wi-Fi — к телефону и планшету она не подключается. Глобальная (EU) версия подключается к телефону. Версия указана в названии модели.</p>" + SHIP + WABTN,
          itemlist(PR) + crumb2("3D-принтеры", "/3d-printery/"), PR[0][8])
 if FI:
-    page("/plastik-dlya-3d-pechati/", "Пластик для 3D-печати в Бишкеке — PLA, PETG, TPU от %s сом за кг | 3D HOUSE" % nf(FILMIN),
+    page("/plastik-dlya-3d-pechati/", "Пластик для 3D-печати в Бишкеке — PLA, PETG от %s сом | 3D HOUSE" % nf(FILMIN),
          "Пластик для 3D-принтера в Бишкеке: PLA, PETG, TPU, ASA — %d серий, от %s сом за катушку 1 кг. Наличие по цветам, самовывоз и доставка по Кыргызстану за 1 день." % (len(FI), nf(FILMIN)),
          '<p class="crumbs"><a href="/">Главная</a> / Пластик для 3D-печати</p><h1>Пластик для 3D-печати в Бишкеке</h1>'
          '<p class="lead">%d серий филамента: PLA, PETG, TPU и ASA. Катушка 1 кг — от %s сом. На странице каждой серии — цвета и наличие.</p>' % (len(FI), nf(FILMIN)) +
@@ -270,7 +294,7 @@ SMAP = ('<section class="wrap" style="padding-top:56px"><h2 style="font-size:22p
         '<div><b>Покупателю</b><br><a href="/voprosy/" style="color:var(--mut)">Вопросы и ответы</a><br><a href="/kontakty/" style="color:var(--mut)">Контакты и адрес шоурума</a></div></div></section>\n')
 k = markup.rindex("<footer")
 markup = markup[:k] + SMAP + markup[k:]
-index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n</body></html>\n' % ver
+index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE) + ld(WEBSITE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n</body></html>\n' % ver
 open(os.path.join(dist, "index.html"), "w", encoding="utf-8").write(index)
 
 # ---------- служебные файлы ----------
