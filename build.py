@@ -7,7 +7,8 @@ import re, json, base64, hashlib, html, os, shutil, datetime
 
 SITE = "https://3dhouse.kg"
 WA = "996559992306"
-PHONE = "+996 559 992 306"
+PHONE = "+996 559 992 306"   # WhatsApp
+TEL = "996505400655"; TELF = "+996 505 400 655"   # телефон для звонков (как в 2ГИС)
 ADDR = "Бишкек, ул. Туголбай Ата, 32Б"
 TITLE = "3D HOUSE — 3D-принтеры Bambu Lab, пластик и сервис в Бишкеке"
 DESC = ("Купить 3D-принтер в Бишкеке: Bambu Lab A1, A2L, P1S, P2S, X2D, Snapmaker U1. Пластик PLA, PETG, TPU от 1 000 сом. "
@@ -84,7 +85,7 @@ def head(title, desc, path, ogimg=None, extra=""):
 
 STORE = {"@context": "https://schema.org", "@type": "Store", "@id": SITE + "/#store", "name": "3D HOUSE", "url": SITE + "/",
          "description": "Магазин 3D-принтеров, пластика и аксессуаров в Бишкеке: продажа, запуск, сервис и обучение.",
-         "telephone": "+996559992306", "priceRange": "200–118000 KGS", "currenciesAccepted": "KGS",
+         "telephone": "+" + TEL, "priceRange": "200–118000 KGS", "currenciesAccepted": "KGS",
          "address": {"@type": "PostalAddress", "streetAddress": "ул. Туголбай Ата, 32Б", "addressLocality": "Бишкек", "addressCountry": "KG"},
          "openingHoursSpecification": {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], "opens": "10:00", "closes": "20:00"},
          "sameAs": ["https://instagram.com/3dhouse.kg"], "areaServed": {"@type": "Country", "name": "Кыргызстан"}}
@@ -122,7 +123,7 @@ header .hd .nav{order:4;width:100%;overflow-x:auto;white-space:nowrap;margin:0 -
 """
 HDR = ('<header><div class="wrap hd"><a class="logo" href="/" aria-label="3D HOUSE"><span class="wm2"><b>3D</b> HOUSE</span></a>'
        '<nav class="nav" style="display:flex"><a href="/3d-printery/">Принтеры</a><a href="/plastik-dlya-3d-pechati/">Пластик</a><a href="/aksessuary/">Аксессуары</a><a href="/voprosy/">Вопросы</a><a href="/kontakty/">Контакты</a></nav>'
-       '<span style="flex:1"></span><a class="phone" href="tel:+%s">%s</a></div></header>' % (WA, PHONE))
+       '<span style="flex:1"></span><a class="phone" href="tel:+%s">%s</a></div></header>' % (TEL, TELF))
 FTR = ('<footer><div class="wrap fg"><div><a class="logo" href="/"><span class="wm2"><b>3D</b> HOUSE</span></a><p>Дом для 3D-печати: принтеры, пластик, сервис и обучение.</p></div>'
        '<div><b>Шоурум</b><p>%s<br>ежедневно 10:00–20:00</p></div><div><b>Каталог</b><p><a href="/3d-printery/">3D-принтеры</a> · <a href="/plastik-dlya-3d-pechati/">Пластик</a> · <a href="/aksessuary/">Аксессуары</a><br><a href="/voprosy/">Вопросы и ответы</a> · <a href="/kontakty/">Контакты</a></p></div>'
        '<div><b>Связь</b><p><a href="https://wa.me/%s">WhatsApp %s</a><br><a href="https://instagram.com/3dhouse.kg">Instagram @3dhouse.kg</a></p></div></div></footer>' % (ADDR, WA, PHONE))
@@ -253,12 +254,12 @@ page("/voprosy/", "Вопросы и ответы о 3D-принтерах и п
      "".join("<details%s><summary>%s</summary><p>%s</p></details>" % (" open" if i < 3 else "", e(q), e(a)) for i, (q, a) in enumerate(FAQ)) + "</div>" + WABTN,
      ld({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in FAQ]}) + crumb2("Вопросы и ответы", "/voprosy/"))
 page("/kontakty/", "Контакты и адрес шоурума 3D HOUSE в Бишкеке",
-     "Шоурум 3D-принтеров 3D HOUSE: %s. Ежедневно 10:00–20:00. Телефон и WhatsApp %s." % (ADDR, PHONE),
+     "Шоурум 3D-принтеров 3D HOUSE: %s. Ежедневно 10:00–20:00. Телефон %s, WhatsApp %s." % (ADDR, TELF, PHONE),
      '<p class="crumbs"><a href="/">Главная</a> / Контакты</p><h1>Контакты 3D HOUSE</h1>'
      '<p class="lead">Шоурум 3D-принтеров и пластика в Бишкеке. Приезжайте посмотреть принтеры вживую.</p>'
      "<h2>Адрес</h2><p>%s</p><h2>Часы работы</h2><p>Ежедневно, 10:00–20:00</p>"
-     '<h2>Телефон и WhatsApp</h2><p><a href="tel:+%s">%s</a> · <a href="https://wa.me/%s">написать в WhatsApp</a></p>'
-     '<h2>Instagram</h2><p><a href="https://instagram.com/3dhouse.kg">@3dhouse.kg</a></p>' % (ADDR, WA, PHONE, WA) + SHIP,
+     '<h2>Телефон</h2><p><a href="tel:+%s">%s</a></p><h2>WhatsApp</h2><p><a href="https://wa.me/%s">%s — написать</a></p>'
+     '<h2>Instagram</h2><p><a href="https://instagram.com/3dhouse.kg">@3dhouse.kg</a></p>' % (ADDR, TEL, TELF, WA, PHONE) + SHIP,
      ld(STORE) + crumb2("Контакты", "/kontakty/"))
 
 # ---------- главная (со ссылками на все страницы) ----------

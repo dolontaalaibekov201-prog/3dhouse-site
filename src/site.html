@@ -1472,7 +1472,7 @@ footer{background:#F1EFEA;color:var(--mut);border-top:1px solid var(--line)}
    <a href="#videos">Видеоуроки</a>
   </nav>
   <div class="search" id="searchBox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="19" height="19"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg><input id="q" type="text" autocomplete="off" spellcheck="false" placeholder="Поиск: A1, PETG, сопло 0.4…" aria-label="Поиск по каталогу"><button type="button" class="qx" id="qx" aria-label="Очистить">×</button></div>
-  <a class="phone" id="phoneTop" href="tel:+996559992306">+996 559 992 306</a>
+  <a class="phone" id="phoneTop" href="tel:+996505400655">+996 505 400 655</a>
   <button class="cartbtn" id="cartBtn" aria-label="Корзина"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="21" height="21"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.6L21 8H6"/><circle cx="10" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg><span class="cnt" id="cnt">0</span></button>
  </div>
  <nav class="mnav" aria-label="Разделы">
@@ -3875,7 +3875,7 @@ function applyAdmin() {
   const wa = (s.wa || WA).replace(/\D/g, "");
   document.querySelectorAll('a[href*="wa.me/"]').forEach((a) => { a.href = "https://wa.me/" + wa; });
   const ph = $("#phoneTop");
-  if (ph) { if (s.phone) ph.textContent = s.phone; ph.href = "tel:+" + wa; }
+  if (ph && s.phone) { ph.textContent = s.phone; ph.href = "tel:+" + s.phone.replace(/\D/g, ""); }
   const fn = $("#freeNote");
   if (fn && s.free) fn.textContent = "Доставка по Бишкеку — бесплатно от " + fmt(+s.free) + ". По регионам считаем отдельно.";
   const ds = $("#demoStrip");

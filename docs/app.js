@@ -385,7 +385,7 @@ function applyAdmin() {
   const wa = (s.wa || WA).replace(/\D/g, "");
   document.querySelectorAll('a[href*="wa.me/"]').forEach((a) => { a.href = "https://wa.me/" + wa; });
   const ph = $("#phoneTop");
-  if (ph) { if (s.phone) ph.textContent = s.phone; ph.href = "tel:+" + wa; }
+  if (ph && s.phone) { ph.textContent = s.phone; ph.href = "tel:+" + s.phone.replace(/\D/g, ""); }
   const fn = $("#freeNote");
   if (fn && s.free) fn.textContent = "Доставка по Бишкеку — бесплатно от " + fmt(+s.free) + ". По регионам считаем отдельно.";
   const ds = $("#demoStrip");
