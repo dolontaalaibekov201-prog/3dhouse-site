@@ -11,9 +11,9 @@ PHONE = "+996 559 992 306"   # WhatsApp
 TEL = "996505400655"; TELF = "+996 505 400 655"   # телефон для звонков (как в 2ГИС)
 ADDR = "Бишкек, ул. Туголбай Ата, 32Б"
 TITLE = "3D HOUSE — 3D-принтеры Bambu Lab, пластик и сервис в Бишкеке"
-TITLE = "3D-принтеры в Бишкеке — Bambu Lab, пластик PLA и PETG | 3D HOUSE"
-DESC = ("Купить 3D-принтер в Бишкеке: Bambu Lab A1, A2L, P1S, X2D. Пластик PLA, PETG, TPU от 1 000 сом. "
-        "Шоурум, гарантия 1 год, рассрочка, доставка по Кыргызстану.")
+TITLE = "3D-принтеры в Бишкеке — купить Bambu Lab, цены | 3D HOUSE"
+DESC = ("3D-принтеры в Бишкеке: Bambu Lab A1, A2L, P1S, X2D в наличии. Шоурум, гарантия 1 год, рассрочка, "
+        "1 кг пластика в подарок, доставка по Кыргызстану за 1 день.")
 
 root = os.path.dirname(os.path.abspath(__file__))
 src = open(os.path.join(root, "src", "site.html"), encoding="utf-8").read()
@@ -237,9 +237,9 @@ FILMIN = min(kg) if kg else min(p[3] for p in FI)
 SHIP = "<h2>Доставка и самовывоз</h2><p>Самовывоз из шоурума: %s, ежедневно 10:00–20:00. В регионы Кыргызстана отправляем через «Ылдам Экспресс» — доставка занимает 1 день.</p>" % ADDR
 WABTN = '<div class="pgbtns" style="margin-top:26px"><a class="btn" href="https://wa.me/%s" target="_blank" rel="noopener">Написать в WhatsApp</a><a class="btn ghost" href="/">Весь каталог</a></div>' % WA
 if PR:
-    page("/3d-printery/", "3D-принтеры в Бишкеке — купить Bambu Lab от %s сом | 3D HOUSE" % nf(min(p[3] for p in PR)),
-         "3D-принтеры в Бишкеке: %d моделей Bambu Lab, Snapmaker и FlashForge от %s сом. Шоурум, гарантия 1 год, запуск и обучение, рассрочка, доставка по Кыргызстану за 1 день." % (len(PR), nf(min(p[3] for p in PR))),
-         '<p class="crumbs"><a href="/">Главная</a> / 3D-принтеры</p><h1>3D-принтеры в Бишкеке</h1>'
+    page("/3d-printery/", "Купить 3D-принтер в Бишкеке — цены и наличие, от %s сом | 3D HOUSE" % nf(min(p[3] for p in PR)),
+         "Цены на 3D-принтеры в Бишкеке: %d моделей Bambu Lab, Snapmaker и FlashForge от %s сом. Наличие, гарантия 1 год, рассрочка, доставка по Кыргызстану." % (len(PR), nf(min(p[3] for p in PR))),
+         '<p class="crumbs"><a href="/">Главная</a> / 3D-принтеры</p><h1>Купить 3D-принтер в Бишкеке: цены и наличие</h1>'
          '<p class="lead">%d моделей в шоуруме 3D HOUSE — от %s сом. К каждому принтеру дарим 1 кг пластика, настраиваем и показываем, как печатать. Гарантия 1 год, сервис в Бишкеке.</p>' % (len(PR), nf(min(p[3] for p in PR))) +
          clist(PR) +
          "<h2>Как выбрать 3D-принтер</h2><p>Новичку и для ребёнка подойдёт простая открытая модель — Bambu Lab A1 или A1 mini. Для многоцветной печати берите комплект Combo: в нём есть система подачи нескольких катушек. Для бизнеса и инженерных пластиков — закрытые модели P1S и X2D.</p>"
@@ -287,13 +287,27 @@ page("/kontakty/", "Контакты и адрес шоурума 3D HOUSE в Б
      ld(STORE) + crumb2("Контакты", "/kontakty/"))
 
 # ---------- главная (со ссылками на все страницы) ----------
+instock = [p for p in PR if CRM[p[0]]["q"] > 0]
+SEOTXT = ('<section class="wrap" style="padding-top:72px"><div style="max-width:860px">'
+          '<h2 style="font-size:clamp(22px,2.6vw,30px);margin:0 0 16px">3D-принтеры в Бишкеке — шоурум 3D HOUSE</h2>'
+          '<p style="line-height:1.7;color:#444;margin:0 0 12px">3D HOUSE — магазин 3D-принтеров в Бишкеке с шоурумом на %s. '
+          'В каталоге %d моделей от %s сом, %d из них сейчас в наличии: %s. Принтер можно посмотреть в работе до покупки.</p>'
+          '<p style="line-height:1.7;color:#444;margin:0 0 12px">К каждому 3D-принтеру дарим 1 кг пластика, настраиваем и показываем, как печатать. '
+          'Гарантия 1 год, сервис в Бишкеке, рассрочка на 3 месяца. Если нужной модели нет — привезём под заказ в течение 4 дней. '
+          'В Ош, Джалал-Абад, Каракол и другие города Кыргызстана отправляем курьерской службой за 1 день.</p>'
+          '<p style="line-height:1.7;color:#444;margin:0">Не знаете, какой 3Д-принтер выбрать? Новичку подойдёт Bambu Lab A1, для многоцветной печати — комплект Combo, '
+          'для бизнеса и инженерных пластиков — закрытые P1S и X2D. <a href="/3d-printery/" style="text-decoration:underline;text-underline-offset:3px">Цены на все 3D-принтеры</a> · '
+          '<a href="/plastik-dlya-3d-pechati/" style="text-decoration:underline;text-underline-offset:3px">пластик для 3D-печати</a> · '
+          '<a href="/voprosy/" style="text-decoration:underline;text-underline-offset:3px">вопросы и ответы</a></p></div></section>\n') % (
+          ADDR.replace("Бишкек, ", ""), len(PR), nf(min(p[3] for p in PR)), len(instock),
+          ", ".join('<a href="%s" style="text-decoration:underline;text-underline-offset:3px">%s</a> — %s сом' % (p[1], e(p[2]), nf(p[3])) for p in instock))
 SMAP = ('<section class="wrap" style="padding-top:56px"><h2 style="font-size:22px;margin:0 0 16px">Каталог 3D HOUSE</h2>'
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px;font-size:14.5px;line-height:1.9">' +
         "".join('<div><a href="%s" style="font-weight:800">%s</a><br>%s</div>' % (cp, cn, "<br>".join('<a href="%s" style="color:var(--mut)">%s</a>' % (p[1], e(p[2])) for p in ps))
                 for cp, cn, ps in (("/3d-printery/", "3D-принтеры в Бишкеке", PR), ("/plastik-dlya-3d-pechati/", "Пластик для 3D-печати", FI), ("/aksessuary/", "Аксессуары", AC)) if ps) +
         '<div><b>Покупателю</b><br><a href="/voprosy/" style="color:var(--mut)">Вопросы и ответы</a><br><a href="/kontakty/" style="color:var(--mut)">Контакты и адрес шоурума</a></div></div></section>\n')
 k = markup.rindex("<footer")
-markup = markup[:k] + SMAP + markup[k:]
+markup = markup[:k] + SEOTXT + SMAP + markup[k:]
 index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE) + ld(WEBSITE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n</body></html>\n' % ver
 open(os.path.join(dist, "index.html"), "w", encoding="utf-8").write(index)
 
