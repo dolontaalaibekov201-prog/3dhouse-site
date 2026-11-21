@@ -305,7 +305,11 @@ for pid, k in CRM.items():
             "offers": {"@type": "AggregateOffer" if fil else "Offer", "priceCurrency": "KGS", "availability": "https://schema.org/InStock" if q > 0 else "https://schema.org/PreOrder", "url": SITE + path, "seller": {"@id": SITE + "/#store"}, "itemCondition": "https://schema.org/NewCondition"}, "sku": pid, "category": catn}
     if fil: prod["offers"].update(lowPrice=price, highPrice=max(x[3] for x in k["v"]), offerCount=len(k["v"]))
     else: prod["offers"]["price"] = price
-    if c["img"]: prod["image"] = SITE + c["img"]
+    if c["img"]: prod["image"] = [SITE + c["img"]]
+    _card = "/cards/%s.jpg" % path.strip("/").split("/")[-1]
+    if os.path.exists(os.path.join(root, "static", _card.lstrip("/"))):
+        prod.setdefault("image", []).append(SITE + _card)
+    if "image" not in prod: prod["image"] = [SITE + "/cards/3dhouse-logo.png"]
     crumbs = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "3D HOUSE", "item": SITE + "/"}, {"@type": "ListItem", "position": 2, "name": catn, "item": SITE + CATPATH.get(c["cat"], DEFCAT)}, {"@type": "ListItem", "position": 3, "name": name}]}
     pages.append((pid, path, name, price, c["cat"], fil, title, desc, c["img"], b, r, ld(prod) + ld(crumbs), catn, anchor))
