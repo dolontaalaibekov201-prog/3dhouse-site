@@ -410,9 +410,75 @@ SMAP = ('<section class="wrap" style="padding-top:56px"><h2 style="font-size:22p
         "".join('<div><a href="%s" style="font-weight:800">%s</a><br>%s</div>' % (cp, cn, "<br>".join('<a href="%s" style="color:var(--mut)">%s</a>' % (p[1], e(p[2])) for p in ps))
                 for cp, cn, ps in (("/3d-printery/", "3D-принтеры в Бишкеке", PR), ("/plastik-dlya-3d-pechati/", "Пластик для 3D-печати", FI), ("/aksessuary/", "Аксессуары", AC)) if ps) +
         '<div><b>Покупателю</b><br><a href="/voprosy/" style="color:var(--mut)">Вопросы и ответы</a><br><a href="/kontakty/" style="color:var(--mut)">Контакты и адрес шоурума</a></div></div></section>\n')
+# ---------- витрина принтеров: модель «поднимает» карточку (SHOWCASE) ----------
+SH_TAG = {"a1mini": "Компактный · стол 180 мм", "a1": "Для старта · стол 256 мм", "a1c": "Многоцветная печать", "a2l": "XL-формат · стол 330 мм",
+          "a2lcn": "XL-формат · китайская версия", "p1s": "Закрытый корпус", "p2s": "Закрытый корпус · AMS", "x2d": "Для бизнеса", "u1": "Четыре печатающие головы"}
+SH_IMG = {"a2lcn": "a2l"}
+sh = [p for p in PR if p[0] in SH_TAG and os.path.exists(os.path.join(root, "static", "cut", SH_IMG.get(p[0], p[0]) + ".webp"))]
+sh.sort(key=lambda p: (CRM[p[0]]["q"] <= 0, p[3]))
+if len(sh) >= 3:
+    def _shi(p):
+        q = CRM[p[0]]["q"]; im = _PI.open(os.path.join(root, "static", "cut", SH_IMG.get(p[0], p[0]) + ".webp")).size if _PI else (400, 400)
+        return ('<div class="shw-it" data-pid="%s" tabindex="0" role="group" aria-label="%s">'
+                '<div class="shw-card"><span class="shw-tag">%s</span><b>%s</b>'
+                '<div class="shw-bot"><span class="shw-pr">%s <small>сом</small><i>%s</i></span>'
+                '<button type="button" class="shw-add" aria-label="%s">%s</button></div></div>'
+                '<img class="shw-img" src="/cut/%s.webp" alt="%s" width="%d" height="%d" loading="lazy" decoding="async">'
+                '<span class="shw-nm">%s<small>%s сом</small></span></div>') % (
+            p[0], e(p[2]), e(SH_TAG[p[0]]), e(p[2]), nf(p[3]), "в наличии" if q > 0 else "под заказ · 4 дня",
+            "В корзину" if q > 0 else "Подробнее", "+" if q > 0 else "→", SH_IMG.get(p[0], p[0]), e(p[2]), im[0], im[1], e(p[2]), nf(p[3]))
+    SHOW = ('<section class="shw" id="showcase"><div class="shw-head"><h2>Выберите свой принтер</h2><p><span class="shw-h1">Наведите на модель — цена и корзина рядом</span><span class="shw-h2">Листайте — цена и корзина рядом</span></p></div>'
+            '<div class="shw-row">' + "".join(_shi(p) for p in sh) + "</div></section>\n")
+    css += """
+.shw{padding-top:88px}.shw-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.shw-head h2{font-size:clamp(26px,3vw,40px);letter-spacing:-.03em;margin:0}.shw-head p{margin:0;color:var(--mut);font-size:15px}
+.shw-row{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;padding:26px 4px 34px;margin:0 -4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.shw-row::-webkit-scrollbar{display:none}
+.shw-it{position:relative;flex:0 0 232px;height:392px;scroll-snap-align:center;cursor:pointer;outline:0;-webkit-tap-highlight-color:transparent}
+.shw-card{position:absolute;inset:0;border-radius:30px;background:linear-gradient(165deg,#2A2A2E,#19191B);color:#fff;padding:24px 22px 20px;display:flex;flex-direction:column;
+ opacity:0;transform:translateY(46px) scale(.9);transition:opacity .38s ease,transform .5s cubic-bezier(.2,.8,.2,1);box-shadow:0 34px 60px -28px rgba(29,29,31,.55);pointer-events:none}
+.shw-card b{font-family:'Unbounded',sans-serif;font-weight:700;font-size:17px;line-height:1.2;letter-spacing:-.02em;margin-top:8px}
+.shw-tag{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#FF8A3D}
+.shw-bot{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.shw-pr{font-family:'Unbounded',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;line-height:1.15}
+.shw-pr small{font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;opacity:.7}
+.shw-pr i{display:block;font-style:normal;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;color:#7ED7A5;margin-top:4px;letter-spacing:0}
+.shw-add{flex:none;width:46px;height:46px;border-radius:15px;border:0;background:#FF6A13;color:#fff;font-size:26px;font-weight:500;line-height:1;cursor:pointer;display:grid;place-items:center;transition:transform .2s ease,background .2s ease}
+.shw-add:hover{transform:scale(1.08);background:#ff7d30}
+.shw-img{position:absolute;left:50%;top:104px;width:176px;height:176px;object-fit:contain;transform:translateX(-50%);z-index:2;
+ transition:transform .5s cubic-bezier(.2,.8,.2,1),filter .4s ease;filter:drop-shadow(0 14px 14px rgba(29,29,31,.14));pointer-events:none}
+.shw-nm{position:absolute;left:0;right:0;top:300px;text-align:center;font-weight:800;font-size:14.5px;line-height:1.3;padding:0 10px;transition:opacity .25s ease}
+.shw-nm small{display:block;font-weight:700;font-size:13px;color:var(--mut);margin-top:3px}
+.shw-it.on .shw-card{opacity:1;transform:none;pointer-events:auto}
+.shw-it.on .shw-img{transform:translateX(-50%) translateY(-4px) scale(1.2);filter:drop-shadow(0 22px 20px rgba(0,0,0,.45))}
+.shw-it.on .shw-nm{opacity:0}
+.shw-h2{display:none}@media (hover:none){.shw-h1{display:none}.shw-h2{display:inline}}
+@media (max-width:640px){.shw{padding-top:56px}.shw-it{flex-basis:208px;height:366px}.shw-img{top:116px;width:150px;height:150px}.shw-nm{top:280px}.shw-row{padding-left:calc(50% - 104px);padding-right:calc(50% - 104px)}}
+@media (prefers-reduced-motion:reduce){.shw-card,.shw-img{transition:none}}
+"""
+    open(os.path.join(dist, "style.css"), "w", encoding="utf-8").write(css)
+    SHJS = """<script>(function(){var row=document.querySelector('.shw-row');if(!row)return;var its=[].slice.call(row.querySelectorAll('.shw-it'));
+function on(el){its.forEach(function(x){x.classList.toggle('on',x===el)})}
+var touch=matchMedia('(hover:none)').matches;
+its.forEach(function(el){el.addEventListener('mouseenter',function(){if(!touch)on(el)});el.addEventListener('focus',function(){on(el)});
+el.addEventListener('click',function(ev){var pid=el.getAttribute('data-pid');var was=el.classList.contains('on');on(el);
+if(ev.target.closest('.shw-add')){var b=document.querySelector('.act[data-id="'+pid+'"] .addb');
+if(b&&!b.disabled&&!b.classList.contains('ask')&&!b.classList.contains('dis')){b.click();var a=ev.target.closest('.shw-add');a.textContent='✓';setTimeout(function(){a.textContent='+'},1100);return}}
+if(!was&&touch&&!ev.target.closest('.shw-add'))return;
+var c=document.querySelector('article.card[data-pid="'+pid+'"] .ph');if(c)c.dispatchEvent(new MouseEvent('click',{bubbles:true}))});
+el.addEventListener('keydown',function(ev){if(ev.key==='Enter')el.click()})});
+var t;row.addEventListener('scroll',function(){if(!touch)return;clearTimeout(t);t=setTimeout(function(){var m=row.getBoundingClientRect(),cx=m.left+m.width/2,best=null,bd=1e9;
+its.forEach(function(x){var r=x.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-cx);if(d<bd){bd=d;best=x}});if(best)on(best)},70)},{passive:true});
+on(its[0])})();</script>
+"""
+    kk = markup.index('<section id="printers"')
+    markup = markup[:kk] + SHOW + markup[kk:]
+else:
+    SHJS = ""
+
 k = markup.rindex("<footer")
 markup = markup[:k] + SEOTXT + SMAP + markup[k:]
-index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE) + ld(WEBSITE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n</body></html>\n' % ver
+index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE) + ld(WEBSITE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n' % ver + SHJS + '</body></html>\n'
 open(os.path.join(dist, "index.html"), "w", encoding="utf-8").write(index)
 
 # ---------- готовые файлы (карточки для объявлений) ----------
