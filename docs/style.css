@@ -1637,3 +1637,17 @@ body.searching .hx,body.searching .cx,body.searching .shw{display:none}
  .tk-r,.hx-grid,.hx-glow,.hx-ring,.hx-eb i,.hx h1 em,.hx-h em,.hx .btn::after,.hx-scan,.hx-dots .on i::after{animation:none!important}
  .hx-im img,.hx-sl.on .hx-im img{clip-path:none;animation:none}.hx-tx>*{opacity:1;transform:none}
 }
+
+/* ===== страницы разделов ===== */
+.more3{display:none}
+body.home:not(.searching) .cat:not(#printers),body.home:not(.searching) .videos,body.home:not(.searching) .layers,body.home:not(.searching) .b2b{display:none}
+body.home:not(.searching) #printers .card:not(.feat){display:none}
+body.home:not(.searching) #printers .more3{display:inline-flex;margin-top:26px}
+body.home:not(.searching) #printers .cnum,body.home:not(.searching) #printers .chips,body.home:not(.searching) #printers .chiphint{display:none}
+.pgi{padding:34px 0 0}.pgi .crumbs{font-size:13.5px;color:var(--mut);margin:0 0 14px}.pgi .crumbs a{text-decoration:underline;text-underline-offset:3px}
+.pgi h1{font-family:'Unbounded',sans-serif;font-weight:800;font-size:clamp(28px,3.6vw,46px);line-height:1.06;letter-spacing:-.04em;text-transform:uppercase;margin:0;text-wrap:balance}
+.pgi .lead{font-size:17px;line-height:1.55;color:var(--mut);max-width:70ch;margin:14px 0 0}
+body.sub .cat:first-of-type{padding-top:34px}
+body.searching .pgi,body.searching .pgt{display:none}
+.pgt{max-width:860px;padding-top:64px}.pgt h2{font-size:clamp(20px,2.3vw,26px);margin:26px 0 10px}.pgt p{line-height:1.7;color:#444;margin:0 0 12px}.pgt a{text-decoration:underline;text-underline-offset:3px}
+@media (max-width:860px){.pgi{padding-top:20px}.pgi .lead{font-size:15px}}

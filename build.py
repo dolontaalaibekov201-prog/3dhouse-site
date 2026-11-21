@@ -321,7 +321,9 @@ for pid, path, name, price, cat, fil, title, desc, img, b, r, lds, catn, anchor 
 
 # ---------- разделы, вопросы, контакты ----------
 extra = []
+PAGEARGS = {}
 def page(path, title, desc, inner, lds="", img=None):
+    PAGEARGS[path] = (title, desc, inner, lds, img)
     out = head(title, desc, path, img, "<style>%s%s</style>\n%s" % (PCSS, XCSS, lds)) + "<body>\n" + HDR + '<main class="pg">' + inner + "</main>" + FTR + "</body></html>\n"
     d = os.path.join(dist, path.strip("/")); os.makedirs(d, exist_ok=True)
     open(os.path.join(d, "index.html"), "w", encoding="utf-8").write(out); extra.append(path)
@@ -584,6 +586,7 @@ k = markup.rindex("<footer")
 markup = markup[:k] + SEOTXT + SMAP + markup[k:]
 index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE) + ld(WEBSITE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n' % ver + SHJS + SK3JS + '</body></html>\n'
 open(os.path.join(dist, "index.html"), "w", encoding="utf-8").write(index)
+exec(open(os.path.join(root, "tools", "pages3.py"), encoding="utf-8").read())
 
 # ---------- готовые файлы (карточки для объявлений) ----------
 if os.path.isdir(os.path.join(root, "static")): shutil.copytree(os.path.join(root, "static"), dist, dirs_exist_ok=True)

@@ -67,8 +67,8 @@ def _ci(pid):
     return (cards.get(pid) or {}).get("img") or PHOTOS.get(pid)
 _cats = [("#printers", "3D-принтеры", "От первого принтера для дома до машин для мелкой серии", ["a1", "p1s"], True),
          ("#filament", "Пластик", "PLA, PETG, TPU и инженерные материалы на складе", ["pla", "fblb", "petg"], False),
-         ("#parts", "Сопла и запчасти", "Сопла, хотэнды, пластины, расходники", ["hkit", "noz", "ha1"], False),
-         ("#ams", "AMS и апгрейды", "Многоцветная печать и системы подачи", ["ams2", "amsl"], False)]
+         ("#parts", "Аксессуары", "Сопла, хотэнды, пластины и AMS", ["hkit", "noz", "ha1"], False),
+         ("#industrial", "Для бизнеса", "Фермы принтеров и оборудование под заказ", ["x2d", "p2s"], True)]
 _t0 = markup.find('<section class="tiles')
 if _t0 != -1:
     _t1 = markup.index("</section>", _t0) + len("</section>")
@@ -337,7 +337,7 @@ if(matchMedia('(hover:hover)').matches){d.addEventListener('pointermove',functio
 /* полоса прокрутки и нижняя панель */
 var sp=d.querySelector('.sp'),tb=d.querySelector('.tb'),ly=0,tk=0;
 function sc(){tk=0;var y=scrollY,h=d.documentElement.scrollHeight-innerHeight;if(sp)sp.style.setProperty('--sp',h>0?(y/h).toFixed(4):0);
-if(tb){var a=tb.querySelectorAll('a');var pr=d.getElementById('printers');var inCat=pr&&pr.getBoundingClientRect().top<innerHeight*.5;a[0].classList.toggle('on',!inCat);a[1].classList.toggle('on',!!inCat)}ly=y}
+if(tb){var a=tb.querySelectorAll('a');var inCat=!d.body.classList.contains('home');a[0].classList.toggle('on',!inCat);a[1].classList.toggle('on',!!inCat)}ly=y}
 addEventListener('scroll',function(){if(!tk)tk=requestAnimationFrame(sc)},{passive:true});sc();
 var tc=d.getElementById('tbCart'),fc=d.getElementById('fabCart'),fn=d.getElementById('fcnt'),tn=d.getElementById('tbCnt');
 if(tc&&fc)tc.addEventListener('click',function(){fc.click()});
