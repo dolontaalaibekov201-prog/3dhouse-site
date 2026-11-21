@@ -372,6 +372,15 @@ if('IntersectionObserver' in window){new IntersectionObserver(function(en){vis=e
 d.addEventListener('visibilitychange',function(){if(d.hidden)clearTimeout(tm);else arm()});arm()}
 /* баннер акции: в корзину */
 var pa=d.querySelector('.pb-add');if(pa)pa.addEventListener('click',function(){var x=d.querySelector('.act[data-id="'+pa.dataset.pid+'"] .addb:not(.dis)');if(x){x.click();pa.classList.add('ok');pa.textContent='Добавлено ✓';setTimeout(function(){pa.classList.remove('ok');pa.textContent='В корзину'},1800)}else{location.href=pa.nextElementSibling.href}});
+/* поиск: на страницах разделов — по всему каталогу */
+var qi=d.getElementById('q');
+if(qi){
+ if(d.body.classList.contains('home')){try{var qs=new URLSearchParams(location.search).get('q');if(qs){qi.value=qs;qi.dispatchEvent(new Event('input',{bubbles:true}));var st=d.getElementById('searchTop');setTimeout(function(){(st||qi).scrollIntoView({block:'start'})},60)}}catch(e){}}
+ else{var em=d.getElementById('empty'),go=function(){var v=qi.value.trim();if(v)location.href='/?q='+encodeURIComponent(v)};
+  if(em){var lk=d.createElement('a');lk.className='btn qall';lk.href='#';lk.textContent='Искать во всём каталоге →';lk.addEventListener('click',function(ev){ev.preventDefault();go()});em.appendChild(d.createElement('br'));em.appendChild(lk)}
+  qi.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();go()}});
+  var tq=0;qi.addEventListener('input',function(){clearTimeout(tq);tq=setTimeout(function(){var v=qi.value.trim();if(v.length>1&&em&&em.classList.contains('on'))go()},900)})}
+}
 /* подсветка за курсором */
 if(matchMedia('(hover:hover)').matches){d.addEventListener('pointermove',function(ev){var c=ev.target.closest&&ev.target.closest('.card,.cx-c');if(!c)return;var r=c.getBoundingClientRect();c.style.setProperty('--mx',(ev.clientX-r.left)+'px');c.style.setProperty('--my',(ev.clientY-r.top)+'px')},{passive:true})}
 /* полоса прокрутки и нижняя панель */

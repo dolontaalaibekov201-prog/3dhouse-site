@@ -1507,6 +1507,8 @@ body.searching .pb{display:none}
 body{background:var(--bg)}
 header{background:rgba(243,244,246,.82);border-bottom-color:rgba(14,15,18,.07)}
 .search{background:#fff}
+.qall{margin-top:14px;display:inline-flex}
+.search input,.search input:focus{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;height:100%!important;width:auto!important;box-shadow:none!important}
 .sp{position:fixed;left:0;top:0;height:3px;width:100%;z-index:60;background:linear-gradient(90deg,#FF6A13,#FFB36B);transform-origin:0 50%;transform:scaleX(var(--sp,0));pointer-events:none}
 .tk{background:#0E0F12;color:#EDEEF1;overflow:hidden;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 .tk-r{display:flex;width:max-content;animation:tkm 38s linear infinite}.tk-g{display:flex;align-items:center;gap:22px;padding:9px 11px}

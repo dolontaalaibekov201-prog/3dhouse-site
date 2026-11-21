@@ -183,6 +183,8 @@ css += r"""
 body{background:var(--bg)}
 header{background:rgba(243,244,246,.82);border-bottom-color:rgba(14,15,18,.07)}
 .search{background:#fff}
+.qall{margin-top:14px;display:inline-flex}
+.search input,.search input:focus{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;height:100%!important;width:auto!important;box-shadow:none!important}
 .sp{position:fixed;left:0;top:0;height:3px;width:100%;z-index:60;background:linear-gradient(90deg,#FF6A13,#FFB36B);transform-origin:0 50%;transform:scaleX(var(--sp,0));pointer-events:none}
 .tk{background:#0E0F12;color:#EDEEF1;overflow:hidden;font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap}
 .tk-r{display:flex;width:max-content;animation:tkm 38s linear infinite}.tk-g{display:flex;align-items:center;gap:22px;padding:9px 11px}
@@ -332,6 +334,15 @@ if('IntersectionObserver' in window){new IntersectionObserver(function(en){vis=e
 d.addEventListener('visibilitychange',function(){if(d.hidden)clearTimeout(tm);else arm()});arm()}
 /* баннер акции: в корзину */
 var pa=d.querySelector('.pb-add');if(pa)pa.addEventListener('click',function(){var x=d.querySelector('.act[data-id="'+pa.dataset.pid+'"] .addb:not(.dis)');if(x){x.click();pa.classList.add('ok');pa.textContent='Добавлено ✓';setTimeout(function(){pa.classList.remove('ok');pa.textContent='В корзину'},1800)}else{location.href=pa.nextElementSibling.href}});
+/* поиск: на страницах разделов — по всему каталогу */
+var qi=d.getElementById('q');
+if(qi){
+ if(d.body.classList.contains('home')){try{var qs=new URLSearchParams(location.search).get('q');if(qs){qi.value=qs;qi.dispatchEvent(new Event('input',{bubbles:true}));var st=d.getElementById('searchTop');setTimeout(function(){(st||qi).scrollIntoView({block:'start'})},60)}}catch(e){}}
+ else{var em=d.getElementById('empty'),go=function(){var v=qi.value.trim();if(v)location.href='/?q='+encodeURIComponent(v)};
+  if(em){var lk=d.createElement('a');lk.className='btn qall';lk.href='#';lk.textContent='Искать во всём каталоге →';lk.addEventListener('click',function(ev){ev.preventDefault();go()});em.appendChild(d.createElement('br'));em.appendChild(lk)}
+  qi.addEventListener('keydown',function(ev){if(ev.key==='Enter'){ev.preventDefault();go()}});
+  var tq=0;qi.addEventListener('input',function(){clearTimeout(tq);tq=setTimeout(function(){var v=qi.value.trim();if(v.length>1&&em&&em.classList.contains('on'))go()},900)})}
+}
 /* подсветка за курсором */
 if(matchMedia('(hover:hover)').matches){d.addEventListener('pointermove',function(ev){var c=ev.target.closest&&ev.target.closest('.card,.cx-c');if(!c)return;var r=c.getBoundingClientRect();c.style.setProperty('--mx',(ev.clientX-r.left)+'px');c.style.setProperty('--my',(ev.clientY-r.top)+'px')},{passive:true})}
 /* полоса прокрутки и нижняя панель */
