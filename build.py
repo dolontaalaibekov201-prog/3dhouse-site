@@ -176,6 +176,8 @@ hero = re.search(r'class="heroimg"[^>]*>\s*<img[^>]*src="([^"]+)"', markup)
 
 # ---------- страницы товаров ----------
 PCSS = """
+.howto{padding-left:22px;line-height:1.65}.howto li{margin:0 0 8px}
+
 .pg{max-width:1080px;margin:0 auto;padding:28px 22px 80px}
 .pg .crumbs{font-size:13.5px;color:var(--mut);margin:0 0 26px}.pg .crumbs a{color:var(--mut);text-decoration:underline;text-underline-offset:3px}
 .pgrid{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start}
@@ -300,7 +302,7 @@ for pid, k in CRM.items():
         r.append("<h2>Что входит в покупку</h2><ul><li>" + (PROMO[pid]["gift"][0].upper() + PROMO[pid]["gift"][1:] + " — акция" if pid in PROMO_OLD else "1 кг пластика в подарок") + "</li><li>Запуск и первая печать вместе с нами</li><li>Гарантия 1 год, сервис в Бишкеке</li><li>Рассрочка — уточняйте условия в WhatsApp</li></ul>")
     r.append("<h2>Доставка и самовывоз</h2><p>Самовывоз из шоурума: %s, ежедневно 10:00–20:00. В регионы Кыргызстана отправляем через «Ылдам Экспресс» — доставка занимает 1 день.</p>" % ADDR)
     prod = {"@context": "https://schema.org", "@type": "Product", "name": name, "description": lead, "brand": {"@type": "Brand", "name": "Bambu Lab" if "Bambu" in name else ("Snapmaker" if "Snapmaker" in name else ("FlashForge" if "FlashForge" in name else "3D HOUSE"))},
-            "offers": {"@type": "AggregateOffer" if fil else "Offer", "priceCurrency": "KGS", "availability": "https://schema.org/InStock" if q > 0 else "https://schema.org/PreOrder", "url": SITE + path, "seller": {"@id": SITE + "/#store"}}}
+            "offers": {"@type": "AggregateOffer" if fil else "Offer", "priceCurrency": "KGS", "availability": "https://schema.org/InStock" if q > 0 else "https://schema.org/PreOrder", "url": SITE + path, "seller": {"@id": SITE + "/#store"}, "itemCondition": "https://schema.org/NewCondition"}, "sku": pid, "category": catn}
     if fil: prod["offers"].update(lowPrice=price, highPrice=max(x[3] for x in k["v"]), offerCount=len(k["v"]))
     else: prod["offers"]["price"] = price
     if c["img"]: prod["image"] = SITE + c["img"]
@@ -309,10 +311,16 @@ for pid, k in CRM.items():
     pages.append((pid, path, name, price, c["cat"], fil, title, desc, c["img"], b, r, ld(prod) + ld(crumbs), catn, anchor))
 
 for pid, path, name, price, cat, fil, title, desc, img, b, r, lds, catn, anchor in pages:
-    more = [p for p in pages if p[4] == cat and p[0] != pid][:8]
+    _grp = (lambda x: x if x in ("printers", "filament") else "acc")
+    more = [p for p in pages if _grp(p[4]) == _grp(cat) and p[0] != pid][:8]
+    howto = ('<h2>Как купить %s в Бишкеке</h2><ol class="howto">'
+             '<li><b>Напишите в WhatsApp</b> или добавьте товар в корзину на сайте — заказ придёт нам, ответим за 15 минут.</li>'
+             '<li><b>Заберите в шоуруме</b>: %s, ежедневно 10:00–20:00. Можно посмотреть товар вживую до оплаты.</li>'
+             '<li><b>Или получите доставкой</b>: по Бишкеку и в регионы Кыргызстана — за 1 день через «Ылдам Экспресс».</li></ol>'
+             '<p>Остались вопросы — смотрите <a href="/voprosy/">вопросы и ответы</a> или <a href="/kontakty/">контакты шоурума</a>.</p>') % (e(name), ADDR)
     out = (head(title, desc, path, img, "<style>%s</style>\n%s" % (PCSS, lds)) + "<body>\n" + HDR +
            '<main class="pg"><p class="crumbs"><a href="/">Главная</a> / <a href="%s">%s</a> / %s</p><div class="pgrid">%s<div>%s</div></div>' % (CATPATH.get(cat, DEFCAT), e(catn), e(name), "".join(b), "".join(r)) +
-           detail(pid, name, fil) +
+           detail(pid, name, fil) + howto +
            ('<h2>Ещё в разделе «%s»</h2><div class="pgmore">%s</div>' % (e(catn), "".join('<a href="%s">%s<span>%s%s сом</span></a>' % (p[1], e(p[2]), "от " if p[5] else "", nf(p[3])) for p in more)) if more else "") +
            "</main>" + FTR + "</body></html>\n")
     d = os.path.join(dist, path.strip("/")); os.makedirs(d, exist_ok=True)
