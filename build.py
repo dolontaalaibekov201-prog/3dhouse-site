@@ -45,6 +45,15 @@ k = rest.rindex("<script>"); markup, js = rest[:k], rest[k + 8: rest.rindex("</s
 open(os.path.join(dist, "app.js"), "w", encoding="utf-8").write(js)
 ver = hashlib.sha1((css + js).encode()).hexdigest()[:8]
 
+# ---------- фото для карточек без снимка ----------
+PHOTOS = {"p2s": "/photos/p2s.jpg", "cr5": "/photos/cr5.jpg", "fblb": "/photos/fblb.jpg", "fblm": "/photos/fblm.jpg"}
+def _photo(m):
+    art = m.group(0); pid = m.group(1)
+    if pid not in PHOTOS or "<img" in art: return art
+    return re.sub(r'<div class="ph (?:model|spool)">.*?</div>', '<div class="ph fit"><img src="%s" alt=""></div>' % PHOTOS[pid], art, count=1, flags=re.S)
+markup = re.sub(r'<article class="card[^"]*" data-pid="([^"]+)".*?</article>', _photo, markup, flags=re.S)
+css += "\n.ph.fit{background:#f4f4f3}.ph.fit img{object-fit:contain;padding:9%}\n"
+
 # ---------- SEO: один H1 на странице, подписи к картинкам ----------
 _h = markup.index("<h1"); _e = markup.index("</h1>", _h) + 5
 markup = markup[:_e] + re.sub(r"<h1\b([^>]*)>", r'<div class="h1x" role="heading" aria-level="2"\1>', markup[_e:]).replace("</h1>", "</div>")

@@ -1454,6 +1454,8 @@ footer{background:#F1EFEA;color:var(--mut);border-top:1px solid var(--line)}
 .fcnt{background:var(--acc);border-color:#FBFAF7}
 ::selection{background:var(--soft2);color:var(--ink)}
 
+.ph.fit{background:#f4f4f3}.ph.fit img{object-fit:contain;padding:9%}
+
 .h1x{font-family:'Unbounded',sans-serif;color:var(--ink);text-wrap:balance}
 
 img{height:auto}
