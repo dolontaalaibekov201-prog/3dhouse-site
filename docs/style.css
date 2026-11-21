@@ -1678,6 +1678,7 @@ body.sub .cat{padding-top:56px}
 .pgt-c:hover{transform:translateY(-4px);box-shadow:0 26px 44px -30px rgba(14,15,18,.4)}
 .pgt h2{font-size:18px;text-transform:uppercase;letter-spacing:-.02em;margin:0 0 12px;padding-left:16px;position:relative}
 .pgt h2::before{content:"";position:absolute;left:0;top:.1em;bottom:.1em;width:5px;border-radius:3px;background:linear-gradient(#FF6A13,#FFB36B)}
+.pgt-c:has(.pgl){grid-column:1/-1}.pgl{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px 26px}.pgl a{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);text-decoration:none!important;font-weight:600;font-size:14.5px}.pgl a:hover{color:#FF6A13}.pgl b{white-space:nowrap;font-weight:800}
 .pgt p{line-height:1.65;color:#4A4C55;margin:0 0 10px;font-size:15px}.pgt p:last-child{margin:0}.pgt a{text-decoration:underline;text-underline-offset:3px}
 @media (max-width:860px){
  .phx{grid-template-columns:1fr;gap:0;margin:12px -8px 0;padding:22px 22px 28px;border-radius:28px}

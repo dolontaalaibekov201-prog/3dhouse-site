@@ -160,7 +160,7 @@ def head(title, desc, path, ogimg=None, extra=""):
 %s<link rel="stylesheet" href="/style.css?v=%s">
 %s</head>
 """ % (e(title), e(desc), SITE, path, e(title), e(desc), SITE, path,
-       ('\n<meta property="og:image" content="%s%s">' % (SITE, ogimg)) if ogimg else "", links, ver, extra))
+       ('\n<meta property="og:image" content="%s%s">' % (SITE, ogimg or "/cards/3dhouse-logo.png")), links, ver, extra))
 
 STORE = {"@context": "https://schema.org", "@type": "Store", "@id": SITE + "/#store", "name": "3D HOUSE", "url": SITE + "/",
          "description": "Магазин 3D-принтеров, пластика и аксессуаров в Бишкеке: продажа, запуск, сервис и обучение.",

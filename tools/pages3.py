@@ -29,10 +29,16 @@ def _keep(m, keep):
     return m
 _base = markup.replace(SEOTXT, "").replace(SMAP, "")
 _SCR = '<script src="/app.js?v=%s"></script>\n' % ver + SHJS + SK3JS
-def shop_page(path, title, desc, intro, keep, tail="", lds="", img=None, chips=(), vis=""):
+def shop_page(path, title, desc, intro, keep, tail="", lds="", img=None, chips=(), vis="", links=()):
     m = _keep(_base, tuple(keep) + ("quizb",))
     ss = _secs(m)
     if not ss: return
+    # лишние шаблоны «историй» товаров на странице раздела не нужны: меньше вес и дублей текста
+    _on = set(re.findall(r'<article class="card[^"]*" data-pid="([^"]+)"', m))
+    m = re.sub(r'<template id="pp-([^"]+)">.*?</template>\s*', lambda t: t.group(0) if t.group(1) in _on else "", m, flags=re.S)
+    if links:
+        tail = (tail or "") + '<h2>Модели и цены</h2><p class="pgl">%s</p>' % "".join(
+            '<a href="%s">%s <b>%s%s сом</b></a>' % (p[1], e(p[2]), "от " if p[5] else "", nf(p[3])) for p in links)
     if tail:
         bl = [x for x in re.split(r"(?=<h2>)", tail) if x.strip()]
         tail = '<div class="pgt">%s</div>' % "".join('<div class="pgt-c">%s</div>' % x for x in bl)
@@ -61,22 +67,22 @@ _PLAY = '<i class="hx-ring"></i><span class="phx-play"><i></i></span>'
 _cr = lambda n: '<p class="crumbs"><a href="/">Главная</a> / %s</p>' % n
 if PR:
     t, d, a, b, l, im = _split("/3d-printery/", PR); shop_page("/3d-printery/", t, d, a, ("printers",), b, l, im,
-        [("%d" % len(PR), "моделей в каталоге"), ("от %s сом" % nf(min(p[3] for p in PR)), "цены"), ("1 год", "гарантия")], _cuts("p1s", "a1", "x2d"))
+        [("%d" % len(PR), "моделей в каталоге"), ("от %s сом" % nf(min(p[3] for p in PR)), "цены"), ("1 год", "гарантия")], _cuts("p1s", "a1", "x2d"), PR)
 if FI:
     t, d, a, b, l, im = _split("/plastik-dlya-3d-pechati/", FI); shop_page("/plastik-dlya-3d-pechati/", t, d, a, ("filament",), b, l, im,
-        [("%d" % len(FI), "серий пластика"), ("от %s сом" % nf(FILMIN), "катушка 1 кг"), ("1 день", "доставка по КР")], _spools("#FF6A13", "#F2F2F4", "#2BB673", "#3B82F6"))
+        [("%d" % len(FI), "серий пластика"), ("от %s сом" % nf(FILMIN), "катушка 1 кг"), ("1 день", "доставка по КР")], _spools("#FF6A13", "#F2F2F4", "#2BB673", "#3B82F6"), FI)
 if AC:
     t, d, a, b, l, im = _split("/aksessuary/", AC)
     shop_page("/aksessuary/", "Аксессуары для 3D-принтера в Бишкеке — сопла, пластины, AMS | 3D HOUSE",
               "Сопла, хотэнды, печатные пластины и системы подачи AMS для 3D-принтеров Bambu Lab в Бишкеке. Наличие в шоуруме, доставка по Кыргызстану за 1 день.",
               _cr("Аксессуары") + "<h1>Аксессуары для 3D-принтера в Бишкеке</h1><p class=\"lead\">Сопла и хотэнды, печатные пластины, системы подачи AMS и расходники — на полке в Бишкеке.</p>",
               ("parts", "plates", "ams"), b, l, im,
-              [("Сопла", "и хотэнды"), ("Пластины", "для печати"), ("AMS", "системы подачи")], _tiles("hkit", "ams2", "pltex"))
+              [("Сопла", "и хотэнды"), ("Пластины", "для печати"), ("AMS", "системы подачи")], _tiles("hkit", "ams2", "pltex"), AC)
 shop_page("/dlya-biznesa/", "Промышленные 3D-принтеры в Бишкеке — оборудование для бизнеса | 3D HOUSE",
           "3D-принтеры для производства, конструкторских бюро и мастерских в Бишкеке: фермы из принтеров Bambu Lab, оборудование под заказ, работа по безналу и с документами.",
           _cr("Для бизнеса") + "<h1>3D-принтеры для бизнеса и производства</h1><p class=\"lead\">Возим оборудование под задачу, считаем смету и окупаемость, работаем по безналу и с документами.</p>",
           ("industrial", "b2b"), SHIP, crumb2("Для бизнеса", "/dlya-biznesa/"), None,
-          [("Безнал", "счёт и договор"), ("Документы", "для бухгалтерии"), ("Пусконаладка", "на месте")], _cuts("x2d", "p2s", "p1s"))
+          [("Безнал", "счёт и договор"), ("Документы", "для бухгалтерии"), ("Пусконаладка", "на месте")], _cuts("x2d", "p2s", "p1s"), [p for p in PR if p[0] in ("x2d", "p2s", "p1s", "cr5", "u1")])
 shop_page("/servis/", "Сервис, запуск и обучение 3D-печати в Бишкеке | 3D HOUSE",
           "Запуск 3D-принтера «под ключ», сервис и запчасти в Бишкеке, обучение 3D-печати. Работаем с юрлицами, школами и производствами.",
           _cr("Сервис") + "<h1>Сервис, запуск и обучение 3D-печати</h1><p class=\"lead\">Подбираем принтер под задачу, запускаем вместе с вами и остаёмся на связи после покупки.</p>",
@@ -143,6 +149,7 @@ body.sub .cat{padding-top:56px}
 .pgt-c:hover{transform:translateY(-4px);box-shadow:0 26px 44px -30px rgba(14,15,18,.4)}
 .pgt h2{font-size:18px;text-transform:uppercase;letter-spacing:-.02em;margin:0 0 12px;padding-left:16px;position:relative}
 .pgt h2::before{content:"";position:absolute;left:0;top:.1em;bottom:.1em;width:5px;border-radius:3px;background:linear-gradient(#FF6A13,#FFB36B)}
+.pgt-c:has(.pgl){grid-column:1/-1}.pgl{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:4px 26px}.pgl a{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line);text-decoration:none!important;font-weight:600;font-size:14.5px}.pgl a:hover{color:#FF6A13}.pgl b{white-space:nowrap;font-weight:800}
 .pgt p{line-height:1.65;color:#4A4C55;margin:0 0 10px;font-size:15px}.pgt p:last-child{margin:0}.pgt a{text-decoration:underline;text-underline-offset:3px}
 @media (max-width:860px){
  .phx{grid-template-columns:1fr;gap:0;margin:12px -8px 0;padding:22px 22px 28px;border-radius:28px}
