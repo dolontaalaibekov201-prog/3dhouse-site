@@ -444,7 +444,7 @@ if len(sh) >= 3:
             '<p><span class="shw-h1">Наведите на модель — она раскроется</span><span class="shw-h2">Листайте — модель раскроется</span></p></div>'
             '<div class="shw-nav"><button type="button" class="shw-prev" aria-label="Предыдущая модель">←</button><span class="shw-cnt"><b>1</b> / %d</span>'
             '<button type="button" class="shw-next" aria-label="Следующая модель">→</button></div></div>'
-            '<div class="shw-row">%s</div></section>\n') % (len(sh), "".join(_shi(p) for p in sh))
+            '<div class="shw-prog" aria-hidden="true">%s</div><div class="shw-row">%s</div></section>\n') % (len(sh), "<i><b></b></i>" * len(sh), "".join(_shi(p) for p in sh))
     css += """
 .shw{padding-top:88px}.shw-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
 .shw-head h2{font-size:clamp(26px,3vw,40px);letter-spacing:-.03em;margin:0 0 8px}.shw-head p{margin:0;color:var(--mut);font-size:15px}
@@ -487,15 +487,30 @@ if len(sh) >= 3:
 .shw-it.on .shw-img{filter:drop-shadow(0 26px 22px rgba(0,0,0,.5))}
 .shw-it.on .shw-nm{opacity:0}
 @keyframes shwfl{0%,100%{margin-top:0}50%{margin-top:-10px}}
+.shw-prog{display:none}
 @media (max-width:860px){
- .shw{padding-top:56px}.shw-nav{display:none}.shw-row{scroll-snap-type:x mandatory;padding-left:calc(50% - 150px);padding-right:calc(50% - 150px)}
- .shw-it{flex-basis:172px;height:500px;scroll-snap-align:center}.shw-it.on{flex-basis:300px}
- .shw-card{padding:22px 20px 20px;border-radius:28px}.shw-card b{font-size:19px;max-width:none}
- .shw-sp{margin-top:auto;gap:6px;max-width:none}.shw-sp li{font-size:13px}.shw-sp li:nth-child(n+3){display:none}
- .shw-bot{margin-top:14px}.shw-pr{font-size:21px}.shw-more{display:none}
- .shw-fl{top:150px;width:140px;height:140px}.shw-nm{top:310px;font-size:13.5px}
- .shw-it.on .shw-fl{left:50%;top:108px;width:206px;height:206px}
- .shw-wm{font-size:150px;bottom:auto;top:120px;right:-30px}
+ .shw{padding-top:56px;overflow:hidden}.shw-nav{display:none}
+ .shw-prog{display:flex;gap:5px;margin:16px 0 0}.shw-prog i{flex:1;height:3px;border-radius:3px;background:rgba(29,29,31,.12);overflow:hidden}
+ .shw-prog b{display:block;height:100%;width:0;background:#FF6A13;border-radius:3px}.shw-prog i.done b{width:100%}
+ .shw-prog i.run b{width:100%;transition:width 5s linear}
+ .shw-row{scroll-snap-type:x mandatory;gap:0;padding:22px calc(50% - 39vw) 34px;margin:0 -16px;perspective:1100px}
+ .shw-it,.shw-it.on{flex:0 0 78vw;height:510px;scroll-snap-align:center;scroll-snap-stop:always;transition:none;
+  transform:scale(calc(.82 + .18*var(--p,0))) rotateY(calc(var(--d,0)*-14deg));opacity:calc(.5 + .5*var(--p,0));will-change:transform}
+ .shw-card,.shw-it.on .shw-card{opacity:1;transform:none;pointer-events:auto;padding:24px 22px 22px;border-radius:30px;transition:none;
+  background:radial-gradient(110% 70% at calc(60% + var(--d,0)*40%) 34%,rgba(255,106,19,.3),transparent 60%),linear-gradient(165deg,#2B2B2F,#17171A)}
+ .shw-card b{font-size:22px;max-width:none}
+ .shw-wm,.shw-it.on .shw-wm{font-size:170px;bottom:auto;top:170px;right:auto;left:50%;transition:none;transform:translateX(calc(-50% + var(--d,0)*120px));color:rgba(255,255,255,.06)}
+ .shw-fl,.shw-it.on .shw-fl{left:50%;top:122px;width:216px;height:216px;transition:none;animation:none;
+  transform:translate(calc(-50% + var(--d,0)*-90px),calc((1 - var(--p,0))*26px)) rotate(calc(var(--d,0)*-9deg)) scale(calc(.8 + .2*var(--p,0)))}
+ .shw-it.on .shw-fl{animation:shwfl 5s ease-in-out .4s infinite}
+ .shw-img,.shw-it.on .shw-img{filter:drop-shadow(0 26px 22px rgba(0,0,0,.5))}
+ .shw-nm{display:none}
+ .shw-sp{margin-top:auto;gap:7px;max-width:none;flex-direction:row;flex-wrap:wrap}
+ .shw-sp li,.shw-it.on .shw-sp li{font-size:12.5px;padding:7px 12px;border-radius:999px;background:rgba(255,255,255,.1);opacity:calc(var(--p,0)*var(--p,0));transform:translateY(calc((1 - var(--p,0))*16px));transition:none}
+ .shw-sp li::before{display:none}.shw-sp li:nth-child(n+3){display:none}.shw-sp li{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+ .shw-bot{margin-top:16px}.shw-pr{font-size:24px}.shw-more{display:none}
+ .shw-add[aria-label="В корзину"]{width:auto;padding:0 18px 0 14px;gap:6px;font-size:22px;display:flex;align-items:center}
+ .shw-add[aria-label="В корзину"]::after{content:"В корзину";font:800 14.5px 'Manrope',sans-serif}
 }
 @media (prefers-reduced-motion:reduce){.shw-card,.shw-fl,.shw-it,.shw-sp li,.shw-wm{transition:none}.shw-it.on .shw-fl{animation:none}}
 """
@@ -519,15 +534,34 @@ if(ev.target.closest('.shw-more')){open(pid);return}
 if(was)open(pid)});
 el.addEventListener('keydown',function(ev){if(ev.key==='Enter')el.click();if(ev.key==='ArrowRight'){on(cur+1,true);its[cur].focus()}if(ev.key==='ArrowLeft'){on(cur-1,true);its[cur].focus()}})});
 var p=document.querySelector('.shw-prev'),n=document.querySelector('.shw-next');if(p)p.addEventListener('click',function(){on(cur-1,true)});if(n)n.addEventListener('click',function(){on(cur+1,true)});
-var t;row.addEventListener('scroll',function(){if(!touch)return;clearTimeout(t);t=setTimeout(function(){if(Date.now()<lock)return;var m=row.getBoundingClientRect(),cx=m.left+m.width/2,best=0,bd=1e9;
-its.forEach(function(x,k){var r=x.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-cx);if(d<bd){bd=d;best=k}});on(best,false)},90)},{passive:true});
-on(0,false)})();</script>
+var mob=matchMedia('(max-width:860px)'),prog=[].slice.call(document.querySelectorAll('.shw-prog i')),raf=0,auto=0,hold=0,vis=false;
+function bars(i,run){prog.forEach(function(x,k){x.className=k<i?'done':'';});if(prog[i]&&run){void prog[i].offsetWidth;prog[i].className='run'}}
+function measure(){raf=0;if(!mob.matches){its.forEach(function(x){x.style.removeProperty('--d');x.style.removeProperty('--p')});return}
+var m=row.getBoundingClientRect(),cx=m.left+m.width/2,best=0,bp=-1;
+its.forEach(function(x,k){var r=x.getBoundingClientRect(),w=x.offsetWidth||1,d=(x.offsetLeft+w/2-row.scrollLeft-row.clientWidth/2)/w;d=Math.max(-1.4,Math.min(1.4,d));var pp=Math.max(0,1-Math.abs(d));
+x.style.setProperty('--d',d.toFixed(3));x.style.setProperty('--p',pp.toFixed(3));if(pp>bp){bp=pp;best=k}});
+if(best!==cur){cur=best;its.forEach(function(x,k){x.classList.toggle('on',k===best)});if(cnt)cnt.textContent=best+1;bars(best,vis&&Date.now()>hold)}}
+function ask(){if(!raf)raf=requestAnimationFrame(measure)}
+function go(i){i=(i+its.length)%its.length;var x=its[i];row.scrollTo({left:x.offsetLeft+x.offsetWidth/2-row.clientWidth/2,behavior:'smooth'})}
+row.addEventListener('scroll',ask,{passive:true});addEventListener('resize',ask);
+['touchstart','pointerdown'].forEach(function(ev){row.addEventListener(ev,function(){hold=Date.now()+9000;bars(cur,false)},{passive:true})});
+function tick(){if(mob.matches&&vis&&Date.now()>hold){go(cur+1)}}
+if('IntersectionObserver' in window){new IntersectionObserver(function(en){vis=en[0].isIntersecting;clearInterval(auto);if(vis&&mob.matches&&!matchMedia('(prefers-reduced-motion:reduce)').matches){bars(cur<0?0:cur,Date.now()>hold);auto=setInterval(function(){if(Date.now()>hold){tick()}else{}} ,5000)}},{threshold:.55}).observe(row)}
+if(mob.matches){cur=-1;measure()}else{on(0,false)}})();</script>
 """
     kk = markup.index('<section id="printers"')
     markup = markup[:kk] + SHOW + markup[kk:]
 else:
     SHJS = ""
 
+# квиз-вопросы уезжают вниз: сначала товары, как в магазине
+_q0 = markup.find('<section class="quizb')
+if _q0 != -1:
+    _q1 = markup.index('</section>', _q0) + len('</section>')
+    _qb = markup[_q0:_q1]; markup = markup[:_q0] + markup[_q1:]
+    _qa = markup.find('<section class="igb')
+    if _qa == -1: _qa = markup.rindex("<footer")
+    markup = markup[:_qa] + _qb + "\n" + markup[_qa:]
 k = markup.rindex("<footer")
 markup = markup[:k] + SEOTXT + SMAP + markup[k:]
 index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE) + ld(WEBSITE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n' % ver + SHJS + '</body></html>\n'
