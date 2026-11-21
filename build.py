@@ -554,6 +554,9 @@ if(mob.matches){cur=-1;measure()}else{on(0,false)}})();</script>
 else:
     SHJS = ""
 
+SK3JS = ""
+exec(open(os.path.join(root, "tools", "skin3.py"), encoding="utf-8").read())
+
 # квиз-вопросы уезжают вниз: сначала товары, как в магазине
 _q0 = markup.find('<section class="quizb')
 if _q0 != -1:
@@ -564,7 +567,7 @@ if _q0 != -1:
     markup = markup[:_qa] + _qb + "\n" + markup[_qa:]
 k = markup.rindex("<footer")
 markup = markup[:k] + SEOTXT + SMAP + markup[k:]
-index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE) + ld(WEBSITE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n' % ver + SHJS + '</body></html>\n'
+index = head(TITLE, DESC, "/", hero.group(1) if hero else None, ld(STORE) + ld(WEBSITE)) + "<body>\n" + markup + '<script src="/app.js?v=%s"></script>\n' % ver + SHJS + SK3JS + '</body></html>\n'
 open(os.path.join(dist, "index.html"), "w", encoding="utf-8").write(index)
 
 # ---------- готовые файлы (карточки для объявлений) ----------
