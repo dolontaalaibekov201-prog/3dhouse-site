@@ -172,6 +172,10 @@ PCSS = """
 .pgcols{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
 .pgcols li{font-size:13.5px;font-weight:600;background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 13px}
 .pgcols li.out{color:#b0b0b3;text-decoration:line-through}
+.pgspec{width:100%;border-collapse:collapse;font-size:15px;max-width:760px}.pgspec th,.pgspec td{text-align:left;padding:11px 0;border-bottom:1px solid var(--line2);vertical-align:top;line-height:1.5}
+.pgspec th{width:38%;font-weight:600;color:var(--mut);padding-right:16px}.pgspec td{font-weight:600}
+.pgfeat{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}.pgfeat img{width:100%;height:auto;border-radius:18px;background:var(--alt)}
+.pgfeat h3{font-size:16px;margin:12px 0 4px}.pgfeat p{margin:0;font-size:14.5px}
 .pgmore{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
 .pgmore a{display:block;background:#fff;border:1px solid var(--line2);border-radius:18px;padding:16px 18px;font-weight:700}
 .pgmore a span{display:block;font-weight:600;font-size:13.5px;color:var(--mut);margin-top:4px}
@@ -186,6 +190,58 @@ HDR = ('<header><div class="wrap hd"><a class="logo" href="/" aria-label="3D HOU
 FTR = ('<footer><div class="wrap fg"><div><a class="logo" href="/"><span class="wm2"><b>3D</b> HOUSE</span></a><p>Дом для 3D-печати: принтеры, пластик, сервис и обучение.</p></div>'
        '<div><b>Шоурум</b><p>%s<br>ежедневно 10:00–20:00</p></div><div><b>Каталог</b><p><a href="/3d-printery/">3D-принтеры</a> · <a href="/plastik-dlya-3d-pechati/">Пластик</a> · <a href="/aksessuary/">Аксессуары</a><br><a href="/voprosy/">Вопросы и ответы</a> · <a href="/kontakty/">Контакты</a></p></div>'
        '<div><b>Связь</b><p><a href="https://wa.me/%s">WhatsApp %s</a><br><a href="https://instagram.com/3dhouse.kg">Instagram @3dhouse.kg</a></p></div></div></footer>' % (ADDR, WA, PHONE))
+
+# ---------- подробности из карточек-«историй» главной (шаблоны pp-*) — на страницы товаров ----------
+DET_ALIAS = {"a1c": "a1", "a2lcn": "a2l"}
+def _tx(x): return html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", x))).strip()
+def detail(pid, name, fil):
+    m = re.search(r'<template id="pp-%s">(.*?)</template>' % re.escape(DET_ALIAS.get(pid, pid)), markup, re.S)
+    if not m: return ""
+    g = lambda cls, sec: [_tx(v) for v in re.findall(r'<(?:p|h2|div)\b[^>]*class="[^"]*\b%s\b[^"]*"[^>]*>(.*?)</(?:p|h2|div)>' % cls, sec, re.S)]
+    rows, feats, uses = [], [], ""
+    for cls, sec in re.findall(r'<section class="([^"]*)"[^>]*>(.*?)</section>', m.group(1), re.S):
+        img = re.search(r'<img[^>]*src="([^"]+)"', sec); img = img.group(1) if img else None
+        if cls.startswith("pp-stat"):
+            eb, sub, note = g("eyebrow", sec), g("pp-sub", sec), g("pp-note", sec)
+            num = re.search(r'data-n="([\d.]+)"', sec); unit = g("unit", sec) if False else [_tx(v) for v in re.findall(r'<span class="unit">(.*?)</span>', sec)]
+            if not eb or not sub: continue
+            val = sub[0]
+            if num and unit and num.group(1) not in val.replace(" ", "").replace(" ", ""): val = "%s %s · %s" % (num.group(1), unit[0], val)
+            rows.append((eb[0], val)); 
+            if note: feats.append((eb[0], note[0], img))
+        elif cls.startswith("pp-feat"):
+            h2 = re.search(r"<h2[^>]*>(.*?)</h2>", sec, re.S); ps = [_tx(v) for v in re.findall(r'<p class="rv">(.*?)</p>', sec, re.S)]
+            eb = g("eyebrow", sec)
+            if h2 and ps:
+                feats.append(((eb[0] + ": " if eb else "") + _tx(h2.group(1)), ps[0], img))
+        elif cls == "pp-mat":
+            chips = [_tx(v) for v in re.findall(r"<span[^>]*>(.*?)</span>", sec, re.S)]
+            ps = [_tx(v) for v in re.findall(r'<p class="rv">(.*?)</p>', sec, re.S)]
+            if chips: rows.append(("Материалы", ", ".join(chips)))
+            for t in (ps[0].rstrip(".").split(",") if ps else []):
+                t = t.strip(); 
+                if t.lower().startswith("сопло"): rows.append(("Температура сопла", t[5:].strip()))
+                elif t.lower().startswith("стол"): rows.append(("Температура стола", t[4:].strip()))
+        elif cls == "pp-uses" and fil:
+            li = [_tx(v) for v in re.findall(r"<li[^>]*>(.*?)</li>", sec, re.S)] or [_tx(v) for v in re.findall(r"<span[^>]*>(.*?)</span>", sec, re.S)]
+            ps = [_tx(v) for v in re.findall(r"<p(?![^>]*eyebrow)[^>]*>(.*?)</p>", sec, re.S)]
+            ps = [x for x in ps if len(x) > 60]
+            uses = ("<h2>Что печатают из %s</h2>" % e(name)) + ("<ul>%s</ul>" % "".join("<li>%s</li>" % e(x) for x in li) if li else "") + "".join("<p>%s</p>" % e(x) for x in ps[:1])
+        elif cls == "pp-specs" and fil:
+            cells = [_tx(v) for v in re.findall(r"<(?:span|b|small|i|em|dt|dd)\b[^>]*>(.*?)</(?:span|b|small|i|em|dt|dd)>", sec, re.S)]
+            cells = [x for x in cells if x]
+            for a, b_ in zip(cells[0::2], cells[1::2]): rows.append((a, b_))
+            warn = [_tx(v) for v in re.findall(r'<p(?![^>]*eyebrow)[^>]*>(.*?)</p>', sec, re.S)]
+            if warn and warn[-1]: rows.append(("Ограничения", warn[-1]))
+    out = uses
+    if rows:
+        seen = set(); rows = [x for x in rows if not (x[0] in seen or seen.add(x[0]))]
+        out += ("<h2>%s</h2>" % ("Режим печати" if fil else "Характеристики %s" % e(name))) + '<table class="pgspec">' + "".join("<tr><th>%s</th><td>%s</td></tr>" % (e(a), e(b_)) for a, b_ in rows) + "</table>"
+    if feats and not fil:
+        out += "<h2>Чем хорош %s</h2>" % e(name) + '<div class="pgfeat">' + "".join(
+            '<div>%s<h3>%s</h3><p>%s</p></div>' % ('<img src="%s" alt="%s — %s" width="440" height="440" loading="lazy" decoding="async">' % (im, e(name), e(t[:1].lower() + t[1:] if t[1:2].islower() else t)) if im else "", e(t), e(p_)) for t, p_, im in feats) + "</div>"
+    return out
+
 
 pages = []
 for pid, k in CRM.items():
@@ -235,6 +291,7 @@ for pid, path, name, price, cat, fil, title, desc, img, b, r, lds, catn, anchor 
     more = [p for p in pages if p[4] == cat and p[0] != pid][:8]
     out = (head(title, desc, path, img, "<style>%s</style>\n%s" % (PCSS, lds)) + "<body>\n" + HDR +
            '<main class="pg"><p class="crumbs"><a href="/">Главная</a> / <a href="%s">%s</a> / %s</p><div class="pgrid">%s<div>%s</div></div>' % (CATPATH.get(cat, DEFCAT), e(catn), e(name), "".join(b), "".join(r)) +
+           detail(pid, name, fil) +
            ('<h2>Ещё в разделе «%s»</h2><div class="pgmore">%s</div>' % (e(catn), "".join('<a href="%s">%s<span>%s%s сом</span></a>' % (p[1], e(p[2]), "от " if p[5] else "", nf(p[3])) for p in more)) if more else "") +
            "</main>" + FTR + "</body></html>\n")
     d = os.path.join(dist, path.strip("/")); os.makedirs(d, exist_ok=True)
