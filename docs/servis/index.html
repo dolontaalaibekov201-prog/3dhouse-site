@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap">
-<link rel="stylesheet" href="/style.css?v=b77016b0">
+<link rel="stylesheet" href="/style.css?v=1de86807">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "3D HOUSE", "item": "https://3dhouse.kg/"}, {"@type": "ListItem", "position": 2, "name": "Сервис", "item": "https://3dhouse.kg/servis/"}]}</script>
 </head>
 <body class="sub">
@@ -353,11 +353,11 @@
  </div>
 </div>
 <div class="toast" id="toast"></div>
-<script src="/app.js?v=b77016b0"></script>
+<script src="/app.js?v=1de86807"></script>
 <script>(function(){
 var rm=matchMedia('(prefers-reduced-motion:reduce)').matches,d=document;
 /* слайдер сцены */
-var hx=d.querySelector('.hx');if(hx){var sl=[].slice.call(hx.querySelectorAll('.hx-sl')),dt=[].slice.call(hx.querySelectorAll('.hx-dots button')),cur=0,tm=0,T=6500,vis=true;
+var hx=d.querySelector('.hx');if(hx){var sl=[].slice.call(hx.querySelectorAll('.hx-sl')),dt=[].slice.call(hx.querySelectorAll('.hx-dots button')),cur=0,tm=0,T=3000,vis=true;
 function show(i){i=(i+sl.length)%sl.length;if(i===cur)return;sl[cur].classList.remove('on');dt[cur].classList.remove('on');cur=i;sl[i].classList.add('on');void dt[i].offsetWidth;dt[i].classList.add('on');arm()}
 function arm(){clearTimeout(tm);if(rm||!vis||hx.classList.contains('hold'))return;tm=setTimeout(function(){show(cur+1)},T)}
 dt.forEach(function(b,i){b.addEventListener('click',function(){show(i)})});

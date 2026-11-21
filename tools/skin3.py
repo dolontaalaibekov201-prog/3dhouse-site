@@ -37,6 +37,17 @@ for _fp, _ft, _fs, _fc in (("x2d", "Два сопла. Один проход.", 
                 e(_p[2]), "в наличии" if _q > 0 else "под заказ", e(_ft), e(_p[2]) + " —", e(_fs[0].lower() + _fs[1:]), _p[1], nf(_p[3]), _chips(_fc),
                 _vis(_fp, _p[2], _p[2].upper() + " · " + ("IN STOCK" if _q > 0 else "PRE-ORDER"))))
         break
+# 2b — Snapmaker U1 в наличии
+if "u1" in _byid and _cut("u1") and CRM["u1"]["q"] > 0:
+    _p = _byid["u1"]
+    _slides.append(
+        '<div class="hx-tx"><p class="eyebrow hx-eb"><i></i><span>Snapmaker U1 · в наличии в шоуруме</span></p>'
+        '<h2 class="hx-h">Четыре головы. <em>Четыре цвета.</em></h2>'
+        '<p class="lede">Snapmaker U1 — многоцветный 3D-принтер с четырьмя печатающими головами: каждая печатает своим цветом. Можно посмотреть вживую в шоуруме.</p>'
+        '<div class="cta"><a class="btn" href="%s">%s сом — подробнее</a></div>%s</div>%s' % (
+            _p[1], nf(_p[3]), _chips([("4", "печатающие головы"), ("В наличии", "в Бишкеке"), ("1 год", "гарантия")]),
+            _vis("u1", _p[2], "SNAPMAKER U1 · IN STOCK")))
+
 # 3 — подарок и рассрочка
 _gp = next((x for x in ("p1s", "a2l", "a1c") if _cut(x)), None)
 if _gp:
@@ -245,7 +256,7 @@ body.searching .hx,body.searching .cx,body.searching .shw{display:none}
 .hx-dots{display:flex;gap:8px}.hx-dots button{width:54px;height:22px;padding:0;border:0;background:none;cursor:pointer;display:grid;align-items:center}
 .hx-dots i{display:block;height:3px;border-radius:3px;background:rgba(255,255,255,.2);overflow:hidden;position:relative}
 .hx-dots i::after{content:"";position:absolute;inset:0;background:#FF6A13;transform:scaleX(0);transform-origin:0 50%}
-.hx-dots .on i::after{animation:hxbar var(--hxt,6.5s) linear forwards}.hx.hold .hx-dots .on i::after{animation-play-state:paused}
+.hx-dots .on i::after{animation:hxbar var(--hxt,3s) linear forwards}.hx.hold .hx-dots .on i::after{animation-play-state:paused}
 @keyframes hxbar{to{transform:scaleX(1)}}
 .hx-ar{display:flex;gap:8px}.hx-ar button{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;font-size:17px;cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
 .hx-ar button:hover{background:#FF6A13;border-color:#FF6A13;transform:scale(1.06)}
@@ -321,7 +332,7 @@ open(os.path.join(dist, "style.css"), "w", encoding="utf-8").write(css)
 SK3JS = """<script>(function(){
 var rm=matchMedia('(prefers-reduced-motion:reduce)').matches,d=document;
 /* слайдер сцены */
-var hx=d.querySelector('.hx');if(hx){var sl=[].slice.call(hx.querySelectorAll('.hx-sl')),dt=[].slice.call(hx.querySelectorAll('.hx-dots button')),cur=0,tm=0,T=6500,vis=true;
+var hx=d.querySelector('.hx');if(hx){var sl=[].slice.call(hx.querySelectorAll('.hx-sl')),dt=[].slice.call(hx.querySelectorAll('.hx-dots button')),cur=0,tm=0,T=3000,vis=true;
 function show(i){i=(i+sl.length)%sl.length;if(i===cur)return;sl[cur].classList.remove('on');dt[cur].classList.remove('on');cur=i;sl[i].classList.add('on');void dt[i].offsetWidth;dt[i].classList.add('on');arm()}
 function arm(){clearTimeout(tm);if(rm||!vis||hx.classList.contains('hold'))return;tm=setTimeout(function(){show(cur+1)},T)}
 dt.forEach(function(b,i){b.addEventListener('click',function(){show(i)})});
