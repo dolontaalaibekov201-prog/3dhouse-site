@@ -83,6 +83,67 @@ if _t0 != -1:
             href, n + 1, _ARW, " two" if cut else "", im, e(t), e(d)))
     markup = markup[:_t0] + '<section class="cx rv" aria-label="Категории">%s</section>' % "".join(_cc) + markup[_t1:]
 
+# рекламный баннер акции (вместо раздела «Популярные модели»)
+_ap = "a1"
+if _ap in PROMO_OLD and _ap in _byid and _cut(_ap):
+    _p = _byid[_ap]; _old = PROMO_OLD[_ap]; _new = PROMO[_ap]["p"]
+    _spool = lambda c, k: '<i class="pb-sp pb-s%d" style="--c:%s"></i>' % (k, c)
+    PB = ('<section class="pb rv" id="promo" aria-label="Акция"><div class="pb-bg" aria-hidden="true"><i class="pb-g1"></i><i class="pb-g2"></i><span class="pb-big">+3 КГ</span></div>'
+          '<div class="pb-tx"><p class="pb-tag"><i></i>Акция · в наличии</p>'
+          '<h2>%s <em>+ 3 кг филамента</em> в подарок</h2>'
+          '<p class="pb-d">Принтер со столом 256 × 256 × 256 мм и три катушки пластика — можно печатать в день покупки. Запуск и первая печать вместе с нами.</p>'
+          '<div class="pb-row"><div class="pb-pr"><s>%s сом</s><b>%s <small>сом</small></b></div>'
+          '<div class="pb-btn"><button type="button" class="btn pb-add" data-pid="%s">В корзину</button><a class="btn ghost" href="%s">Подробнее</a></div></div></div>'
+          '<div class="pb-vis" aria-hidden="true">%s%s%s<img src="/cut/%s.webp" alt="" width="400" height="446" loading="lazy" decoding="async"><span class="pb-badge"><b>3 кг</b>в подарок</span></div>'
+          '</section>') % (e(_p[2]), nf(_old), nf(_new), _ap, _p[1], _spool("#FF6A13", 1), _spool("#F2F2F4", 2), _spool("#2BB673", 3), _ap)
+    _c0 = markup.find('<section class="cx ')
+    if _c0 != -1:
+        _c1 = markup.index("</section>", _c0) + len("</section>")
+        markup = markup[:_c1] + "\n" + PB + markup[_c1:]
+    css += r"""
+.pb{position:relative;display:grid;grid-template-columns:1.1fr .9fr;gap:20px;align-items:center;margin-top:20px;padding:48px 56px;border-radius:36px;overflow:hidden;isolation:isolate;color:#fff;
+ background:linear-gradient(120deg,#FF5A00 0%,#FF6A13 38%,#FF9A4D 100%);box-shadow:0 40px 70px -46px rgba(255,90,0,.9)}
+body.searching .pb{display:none}
+.pb-bg{position:absolute;inset:0;z-index:-1;overflow:hidden}
+.pb-g1{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.13) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.13) 1px,transparent 1px);background-size:44px 44px;
+ -webkit-mask-image:radial-gradient(70% 90% at 78% 50%,#000,transparent 75%);mask-image:radial-gradient(70% 90% at 78% 50%,#000,transparent 75%);animation:pbg 9s linear infinite}
+@keyframes pbg{to{background-position:44px 44px,44px 44px}}
+.pb-g2{position:absolute;right:4%;top:50%;width:46%;aspect-ratio:1;transform:translateY(-50%);border-radius:50%;background:radial-gradient(closest-side,rgba(255,255,255,.5),transparent 70%);animation:hxp 5s ease-in-out infinite}
+.pb-big{position:absolute;right:-12px;bottom:-54px;font-family:'Unbounded',sans-serif;font-weight:800;font-size:230px;line-height:1;letter-spacing:-.06em;color:rgba(255,255,255,.13);white-space:nowrap}
+.pb-tag{display:inline-flex;align-items:center;gap:9px;margin:0 0 16px;padding:7px 13px;border-radius:999px;background:#0E0F12;font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.pb-tag i{width:8px;height:8px;border-radius:50%;background:#7ED7A5;animation:hxd2 1.8s ease-out infinite}
+@keyframes hxd2{from{box-shadow:0 0 0 0 rgba(126,215,165,.8)}to{box-shadow:0 0 0 11px rgba(126,215,165,0)}}
+.pb h2{color:#fff;font-family:'Unbounded',sans-serif;font-weight:800;font-size:clamp(26px,3.3vw,44px);line-height:1.06;letter-spacing:-.04em;text-transform:uppercase;margin:0;text-wrap:balance}
+.pb h2 em{font-style:normal;color:#0E0F12}
+.pb-d{margin:16px 0 26px;max-width:48ch;font-size:16px;line-height:1.5;color:rgba(255,255,255,.92)}
+.pb-row{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+.pb-pr s{display:block;font-size:15px;font-weight:700;color:rgba(255,255,255,.75);text-decoration-thickness:2px}
+.pb-pr b{display:block;font-family:'Unbounded',sans-serif;font-weight:800;font-size:38px;line-height:1.05;letter-spacing:-.04em;white-space:nowrap}.pb-pr small{font-family:'Manrope',sans-serif;font-size:15px;font-weight:800;letter-spacing:0}
+.pb-btn{display:flex;gap:10px;flex-wrap:wrap}
+.pb .btn{background:#0E0F12;border-color:#0E0F12;color:#fff;cursor:pointer;transition:transform .25s var(--s3),box-shadow .25s}.pb .btn:hover{transform:translateY(-2px);box-shadow:0 16px 26px -12px rgba(14,15,18,.7);filter:none}
+.pb .btn.ghost{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.55);color:#fff}.pb .btn.ghost:hover{background:rgba(255,255,255,.32)}
+.pb-add.ok{background:#1F9D5B;border-color:#1F9D5B}
+.pb-vis{position:relative;height:340px;display:grid;place-items:center}
+.pb-vis img{position:relative;z-index:2;max-height:320px;width:auto;filter:drop-shadow(0 34px 26px rgba(120,40,0,.55));animation:hxfl 6s ease-in-out infinite}
+.pb-sp{position:absolute;z-index:1;width:112px;aspect-ratio:1;border-radius:50%;
+ background:radial-gradient(circle,#17181C 0 17%,#3A3C44 17% 21%,var(--c) 21% 58%,rgba(14,15,18,.9) 58% 61%,#2A2C33 61% 100%);
+ box-shadow:inset 0 0 0 3px rgba(255,255,255,.14),0 22px 26px -10px rgba(90,30,0,.6);animation:pbs 7s ease-in-out infinite}
+.pb-sp::after{content:"";position:absolute;inset:21%;border-radius:50%;background:repeating-radial-gradient(circle,rgba(0,0,0,.16) 0 1.5px,transparent 1.5px 4px);-webkit-mask-image:radial-gradient(circle,transparent 0 22%,#000 22% 88%,transparent 88%);mask-image:radial-gradient(circle,transparent 0 22%,#000 22% 88%,transparent 88%)}
+.pb-s1{left:2%;top:6%}.pb-s2{left:-4%;bottom:6%;width:92px;animation-delay:-2.3s}.pb-s3{right:0;bottom:2%;width:124px;animation-delay:-4.1s}
+@keyframes pbs{50%{transform:translateY(-14px) rotate(24deg)}}
+.pb-badge{position:absolute;z-index:3;right:2%;top:4%;width:108px;height:108px;border-radius:50%;background:#0E0F12;display:grid;place-content:center;text-align:center;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+ transform:rotate(12deg);box-shadow:0 18px 30px -12px rgba(14,15,18,.7);animation:pbb 4s ease-in-out infinite}
+.pb-badge b{display:block;font-family:'Unbounded',sans-serif;font-size:24px;letter-spacing:-.03em;color:#FF8A3D;line-height:1.1;text-transform:none}
+@keyframes pbb{50%{transform:rotate(4deg) scale(1.07)}}
+@media (max-width:860px){
+ .pb{grid-template-columns:1fr;gap:6px;margin:12px -8px 0;padding:22px 22px 26px;border-radius:28px}
+ .pb-vis{order:-1;height:220px}.pb-vis img{max-height:200px}.pb-sp{width:74px}.pb-s2{width:60px;left:2%}.pb-s3{width:82px}.pb-s1{left:8%}
+ .pb-badge{width:84px;height:84px;font-size:9px;right:4%}.pb-badge b{font-size:19px}.pb-big{font-size:130px;bottom:auto;top:60px}
+ .pb-d{font-size:14.5px;margin:12px 0 18px}.pb-row{gap:14px}.pb-pr b{font-size:32px}.pb-btn{width:100%;flex-wrap:nowrap}.pb-btn .btn{flex:1 1 0;text-align:center;justify-content:center;white-space:nowrap;padding-left:10px;padding-right:10px}
+}
+@media (prefers-reduced-motion:reduce){.pb-g1,.pb-g2,.pb-vis img,.pb-sp,.pb-badge,.pb-tag i{animation:none!important}}
+"""
+
 # порядок как в магазине: сцена → категории → популярные модели → выгоды → каталог
 _p0 = markup.find('<section class="perks')
 _s0 = markup.find('<section class="shw"')
@@ -269,6 +330,8 @@ var x0=null,y0=0;hx.addEventListener('touchstart',function(ev){x0=ev.touches[0].
 hx.addEventListener('touchend',function(ev){if(x0===null)return;var dx=ev.changedTouches[0].clientX-x0,dy=ev.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)>46&&Math.abs(dx)>Math.abs(dy)*1.4)show(cur+(dx<0?1:-1))},{passive:true});
 if('IntersectionObserver' in window){new IntersectionObserver(function(en){vis=en[0].isIntersecting;if(vis)arm();else clearTimeout(tm)},{threshold:.3}).observe(hx)}
 d.addEventListener('visibilitychange',function(){if(d.hidden)clearTimeout(tm);else arm()});arm()}
+/* баннер акции: в корзину */
+var pa=d.querySelector('.pb-add');if(pa)pa.addEventListener('click',function(){var x=d.querySelector('.act[data-id="'+pa.dataset.pid+'"] .addb:not(.dis)');if(x){x.click();pa.classList.add('ok');pa.textContent='Добавлено ✓';setTimeout(function(){pa.classList.remove('ok');pa.textContent='В корзину'},1800)}else{location.href=pa.nextElementSibling.href}});
 /* подсветка за курсором */
 if(matchMedia('(hover:hover)').matches){d.addEventListener('pointermove',function(ev){var c=ev.target.closest&&ev.target.closest('.card,.cx-c');if(!c)return;var r=c.getBoundingClientRect();c.style.setProperty('--mx',(ev.clientX-r.left)+'px');c.style.setProperty('--my',(ev.clientY-r.top)+'px')},{passive:true})}
 /* полоса прокрутки и нижняя панель */

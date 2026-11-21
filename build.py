@@ -42,6 +42,19 @@ assert m, "неожиданное начало страницы"
 links, css, rest = m.group(1), m.group(2), body[m.end():]
 open(os.path.join(dist, "style.css"), "w", encoding="utf-8").write(css)
 k = rest.rindex("<script>"); markup, js = rest[:k], rest[k + 8: rest.rindex("</script>")]
+# ---------- акции: цена на сайте ниже цены из CRM, пока акция включена ----------
+PROMO = {"a1": {"p": 29900, "gift": "3 кг филамента в подарок"}}
+PROMO_OLD = {}
+for _pp, _pv in PROMO.items():
+    _m = re.search(r'"%s": \{"p": (\d+)' % _pp, js)
+    if _m and int(_m.group(1)) > _pv["p"]:
+        PROMO_OLD[_pp] = int(_m.group(1))
+        js = js[:_m.start(1)] + str(_pv["p"]) + js[_m.end(1):]
+        _a = re.search(r'<article class="card[^"]*" data-pid="%s".*?</article>' % _pp, markup, re.S)
+        if _a:
+            _t = _a.group(0).replace('data-p="%d"' % PROMO_OLD[_pp], 'data-p="%d"' % _pv["p"])
+            _t = re.sub(r"(<div class=\"pr\"><b>)[^<]*(</b>)", lambda m: m.group(1) + "{:,}".format(_pv["p"]).replace(",", "\u00a0") + m.group(2), _t, count=1)
+            markup = markup[:_a.start()] + _t + markup[_a.end():]
 open(os.path.join(dist, "app.js"), "w", encoding="utf-8").write(js)
 ver = hashlib.sha1((css + js).encode()).hexdigest()[:8]
 
@@ -106,6 +119,7 @@ markup = markup.replace("</b><span>сом</span>", "</b> <span>сом</span>")
 
 # ---------- данные для страниц товаров ----------
 CRM = json.loads(re.search(r"const CRM = (\{.*?\});\s*const CRM_AT", src, re.S).group(1))
+for _pp in PROMO_OLD: CRM[_pp]["p"] = PROMO[_pp]["p"]
 FDESC = json.loads(re.search(r"const FDESC = (\{.*?\});\n", src).group(1))
 cards = {}
 for a in re.finditer(r'<article class="card[^"]*" data-pid="([^"]+)" data-cat="([^"]+)"[^>]*>(.*?)</article>', markup, re.S):
@@ -283,7 +297,7 @@ for pid, k in CRM.items():
     else:
         if c["d"] or k.get("d"): r.append("<h2>Коротко</h2><ul>" + "".join("<li>%s</li>" % e(t.strip()) for t in (k.get("d") or c["d"]).split("·") if t.strip()) + "</ul>")
     if c["cat"] == "printers":
-        r.append("<h2>Что входит в покупку</h2><ul><li>1 кг пластика в подарок</li><li>Запуск и первая печать вместе с нами</li><li>Гарантия 1 год, сервис в Бишкеке</li><li>Рассрочка — уточняйте условия в WhatsApp</li></ul>")
+        r.append("<h2>Что входит в покупку</h2><ul><li>" + (PROMO[pid]["gift"][0].upper() + PROMO[pid]["gift"][1:] + " — акция" if pid in PROMO_OLD else "1 кг пластика в подарок") + "</li><li>Запуск и первая печать вместе с нами</li><li>Гарантия 1 год, сервис в Бишкеке</li><li>Рассрочка — уточняйте условия в WhatsApp</li></ul>")
     r.append("<h2>Доставка и самовывоз</h2><p>Самовывоз из шоурума: %s, ежедневно 10:00–20:00. В регионы Кыргызстана отправляем через «Ылдам Экспресс» — доставка занимает 1 день.</p>" % ADDR)
     prod = {"@context": "https://schema.org", "@type": "Product", "name": name, "description": lead, "brand": {"@type": "Brand", "name": "Bambu Lab" if "Bambu" in name else ("Snapmaker" if "Snapmaker" in name else ("FlashForge" if "FlashForge" in name else "3D HOUSE"))},
             "offers": {"@type": "AggregateOffer" if fil else "Offer", "priceCurrency": "KGS", "availability": "https://schema.org/InStock" if q > 0 else "https://schema.org/PreOrder", "url": SITE + path, "seller": {"@id": SITE + "/#store"}}}
@@ -425,7 +439,8 @@ SH = {  # pid: (подпись, код-водяной знак, [факты])
 SH_IMG = {"a2lcn": "a2l"}
 sh = [p for p in PR if p[0] in SH and os.path.exists(os.path.join(root, "static", "cut", SH_IMG.get(p[0], p[0]) + ".webp"))]
 sh.sort(key=lambda p: (CRM[p[0]]["q"] <= 0, p[3]))
-if len(sh) >= 3:
+SHOWCASE_ON = False  # раздел «Популярные модели» выключен по просьбе владельца
+if SHOWCASE_ON and len(sh) >= 3:
     def _shi(p):
         q = CRM[p[0]]["q"]; tag, wm, facts = SH[p[0]]
         im = _PI.open(os.path.join(root, "static", "cut", SH_IMG.get(p[0], p[0]) + ".webp")).size if _PI else (400, 400)
