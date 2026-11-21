@@ -11,7 +11,7 @@ PHONE = "+996 559 992 306"   # WhatsApp
 TEL = "996505400655"; TELF = "+996 505 400 655"   # телефон для звонков (как в 2ГИС)
 ADDR = "Бишкек, ул. Туголбай Ата, 32Б"
 TITLE = "3D HOUSE — 3D-принтеры Bambu Lab, пластик и сервис в Бишкеке"
-TITLE = "3D-принтеры в Бишкеке — купить Bambu Lab, цены | 3D HOUSE"
+TITLE = "3D-принтеры в Бишкеке — купить Bambu Lab | 3D HOUSE"
 DESC = ("3D-принтеры в Бишкеке: Bambu Lab A1, A2L, P1S, X2D в наличии. Шоурум, гарантия 1 год, рассрочка, "
         "1 кг пластика в подарок, доставка по Кыргызстану за 1 день.")
 
@@ -101,6 +101,9 @@ markup = markup[:_hi] + re.sub(r"<img\b[^>]*>", _imgattrs, markup[_hi:])
 css += "\nimg{height:auto}\n"
 open(os.path.join(dist, "style.css"), "w", encoding="utf-8").write(css)
 
+# цена и валюта через пробел — чтобы в поиске не слипалось «23 000сом»
+markup = markup.replace("</b><span>сом</span>", "</b> <span>сом</span>")
+
 # ---------- данные для страниц товаров ----------
 CRM = json.loads(re.search(r"const CRM = (\{.*?\});\s*const CRM_AT", src, re.S).group(1))
 FDESC = json.loads(re.search(r"const FDESC = (\{.*?\});\n", src).group(1))
@@ -134,7 +137,11 @@ def head(title, desc, path, ogimg=None, extra=""):
 <meta property="og:type" content="website"><meta property="og:site_name" content="3D HOUSE"><meta property="og:locale" content="ru_RU">
 <meta property="og:title" content="%s"><meta property="og:description" content="%s"><meta property="og:url" content="%s%s">%s
 <meta name="theme-color" content="#FBFAF7">
+<link rel="icon" href="/favicon-96.png" type="image/png" sizes="96x96">
+<link rel="icon" href="/favicon-48.png" type="image/png" sizes="48x48">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 %s<link rel="stylesheet" href="/style.css?v=%s">
 %s</head>
