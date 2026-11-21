@@ -120,6 +120,14 @@ markup = markup.replace("</b><span>сом</span>", "</b> <span>сом</span>")
 # ---------- данные для страниц товаров ----------
 CRM = json.loads(re.search(r"const CRM = (\{.*?\});\s*const CRM_AT", src, re.S).group(1))
 for _pp in PROMO_OLD: CRM[_pp]["p"] = PROMO[_pp]["p"]
+# цена из CRM прямо в HTML карточек (для поисковиков без JS) и без демо-строки
+def _fixprice(m):
+    art = m.group(0); pid = m.group(1); k = CRM.get(pid)
+    if not k or not k.get("p"): return art
+    pr = int(k["p"]); art = re.sub(r'data-p="\d*"', 'data-p="%d"' % pr, art, count=1)
+    return re.sub(r'(<div class="pr"><b>)[^<]*(</b>)', lambda t: t.group(1) + "{:,}".format(pr).replace(",", "\u00a0") + t.group(2), art, count=1)
+markup = re.sub(r'<article class="card[^"]*" data-pid="([^"]+)".*?</article>', _fixprice, markup, flags=re.S)
+markup = re.sub(r'<div class="demo"[^>]*>.*?</div>\s*', "", markup, count=1, flags=re.S)
 FDESC = json.loads(re.search(r"const FDESC = (\{.*?\});\n", src).group(1))
 cards = {}
 for a in re.finditer(r'<article class="card[^"]*" data-pid="([^"]+)" data-cat="([^"]+)"[^>]*>(.*?)</article>', markup, re.S):
