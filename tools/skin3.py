@@ -268,7 +268,7 @@ body.searching .hx,body.searching .cx,body.searching .shw{display:none}
 /* выгоды и каталог */
 .perks{padding-top:28px}.perk{border-radius:26px;border-color:rgba(14,15,18,.05);transition:transform .4s var(--s3),box-shadow .4s var(--s3)}
 .perk:hover{transform:translateY(-4px);box-shadow:0 26px 44px -30px rgba(14,15,18,.4)}
-.perk.dk{background:#0E0F12;border-color:#0E0F12}
+.perk.dk{background:#0E0F12;border-color:#0E0F12}.perk.dk,.perk.dk b{color:#fff}.perk.dk b em{color:#FF8A3D}.perk.dk p,.perk.dk .pk{color:rgba(255,255,255,.62)}
 .shw-head h2,.chead h2{text-transform:uppercase;letter-spacing:-.03em}
 .chead h2{position:relative;padding-left:20px}.chead h2::before{content:"";position:absolute;left:0;top:.14em;bottom:.14em;width:6px;border-radius:3px;background:linear-gradient(#FF6A13,#FFB36B)}
 .card{position:relative;border-radius:24px;border-color:rgba(14,15,18,.06);background:#fff;transition:transform .4s var(--s3),box-shadow .4s var(--s3),border-color .3s;isolation:isolate}
