@@ -624,4 +624,12 @@ open(os.path.join(dist, ".nojekyll"), "w").write("")
 open(os.path.join(dist, "yandex_ea1a9dc4360e0d48.html"), "w").write('<html>\n    <head>\n        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">\n    </head>\n    <body>Verification: ea1a9dc4360e0d48</body>\n</html>\n')
 open(os.path.join(dist, "404.html"), "w", encoding="utf-8").write(head("Страница не найдена | 3D HOUSE", "Такой страницы нет.", "/404.html") + "<body>" + HDR +
     '<main class="wrap" style="padding:90px 22px;text-align:center"><h1 style="font-size:34px">Страница не найдена</h1><p style="color:var(--mut);margin:14px 0 26px">Возможно, товар переехал. Посмотрите каталог.</p><a class="btn" href="/">На главную</a></main>' + FTR + "</body></html>")
+# версия стилей/скрипта по итоговому содержимому — чтобы браузеры сразу брали новое оформление
+import glob as _g
+_fv = hashlib.sha1((open(os.path.join(dist, "style.css"), encoding="utf-8").read() + open(os.path.join(dist, "app.js"), encoding="utf-8").read()).encode()).hexdigest()[:8]
+for _f in _g.glob(os.path.join(dist, "**", "*.html"), recursive=True):
+    _t = open(_f, encoding="utf-8").read()
+    _n = _t.replace("style.css?v=%s" % ver, "style.css?v=%s" % _fv).replace("app.js?v=%s" % ver, "app.js?v=%s" % _fv)
+    if _n != _t: open(_f, "w", encoding="utf-8").write(_n)
+index = index.replace("?v=%s" % ver, "?v=%s" % _fv)
 print("ok: %d картинок, %d страниц товаров, index %d КБ" % (len(seen), len(pages), len(index) // 1024))
