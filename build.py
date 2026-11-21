@@ -410,66 +410,118 @@ SMAP = ('<section class="wrap" style="padding-top:56px"><h2 style="font-size:22p
         "".join('<div><a href="%s" style="font-weight:800">%s</a><br>%s</div>' % (cp, cn, "<br>".join('<a href="%s" style="color:var(--mut)">%s</a>' % (p[1], e(p[2])) for p in ps))
                 for cp, cn, ps in (("/3d-printery/", "3D-принтеры в Бишкеке", PR), ("/plastik-dlya-3d-pechati/", "Пластик для 3D-печати", FI), ("/aksessuary/", "Аксессуары", AC)) if ps) +
         '<div><b>Покупателю</b><br><a href="/voprosy/" style="color:var(--mut)">Вопросы и ответы</a><br><a href="/kontakty/" style="color:var(--mut)">Контакты и адрес шоурума</a></div></div></section>\n')
-# ---------- витрина принтеров: модель «поднимает» карточку (SHOWCASE) ----------
-SH_TAG = {"a1mini": "Компактный · стол 180 мм", "a1": "Для старта · стол 256 мм", "a1c": "Многоцветная печать", "a2l": "XL-формат · стол 330 мм",
-          "a2lcn": "XL-формат · китайская версия", "p1s": "Закрытый корпус", "p2s": "Закрытый корпус · AMS", "x2d": "Для бизнеса", "u1": "Четыре печатающие головы"}
+# ---------- витрина принтеров: активная модель раскрывается в панель (SHOWCASE v2) ----------
+SH = {  # pid: (подпись, код-водяной знак, [факты])
+ "a1":    ("Для старта", "A1", ["Стол 256 × 256 × 256 мм", "Китайская версия", "Нужен компьютер и Wi-Fi"]),
+ "a1c":   ("Многоцветная печать", "A1", ["Комплект Combo", "Версия EU", "Подключается к телефону"]),
+ "a2l":   ("XL-формат", "A2L", ["Стол 330 × 320 × 325 мм", "Комплект Combo", "Версия EU"]),
+ "a2lcn": ("XL-формат", "A2L", ["Стол 330 × 320 × 325 мм", "Комплект Combo", "Китайская версия"]),
+ "p1s":   ("Закрытый корпус", "P1S", ["Печатает ABS, ASA, PA-CF", "Комплект Combo", "Версия EU"]),
+ "p2s":   ("Закрытый корпус", "P2S", ["AMS в комплекте", "Комплект Combo", "Версия EU"]),
+ "x2d":   ("Для бизнеса", "X2D", ["Инженерные пластики", "Комплект Combo с AMS", "Версия EU"]),
+ "u1":    ("Многоцветный", "U1", ["Четыре печатающие головы", "Многоцветная печать"]),
+ "a1mini":("Компактный", "A1", ["Стол 180 × 180 × 180 мм", "Китайская версия", "Нужен компьютер и Wi-Fi"]),
+}
 SH_IMG = {"a2lcn": "a2l"}
-sh = [p for p in PR if p[0] in SH_TAG and os.path.exists(os.path.join(root, "static", "cut", SH_IMG.get(p[0], p[0]) + ".webp"))]
+sh = [p for p in PR if p[0] in SH and os.path.exists(os.path.join(root, "static", "cut", SH_IMG.get(p[0], p[0]) + ".webp"))]
 sh.sort(key=lambda p: (CRM[p[0]]["q"] <= 0, p[3]))
 if len(sh) >= 3:
     def _shi(p):
-        q = CRM[p[0]]["q"]; im = _PI.open(os.path.join(root, "static", "cut", SH_IMG.get(p[0], p[0]) + ".webp")).size if _PI else (400, 400)
-        return ('<div class="shw-it" data-pid="%s" tabindex="0" role="group" aria-label="%s">'
-                '<div class="shw-card"><span class="shw-tag">%s</span><b>%s</b>'
-                '<div class="shw-bot"><span class="shw-pr">%s <small>сом</small><i>%s</i></span>'
-                '<button type="button" class="shw-add" aria-label="%s">%s</button></div></div>'
-                '<img class="shw-img" src="/cut/%s.webp" alt="%s" width="%d" height="%d" loading="lazy" decoding="async">'
+        q = CRM[p[0]]["q"]; tag, wm, facts = SH[p[0]]
+        im = _PI.open(os.path.join(root, "static", "cut", SH_IMG.get(p[0], p[0]) + ".webp")).size if _PI else (400, 400)
+        return ('<div class="shw-it" data-pid="%s" data-url="%s" tabindex="0" role="group" aria-label="%s">'
+                '<div class="shw-card"><span class="shw-wm" aria-hidden="true">%s</span><span class="shw-tag">%s</span><b>%s</b>'
+                '<ul class="shw-sp">%s</ul>'
+                '<div class="shw-bot"><span class="shw-pr">%s <small>сом</small><i class="%s">%s</i></span>'
+                '<span class="shw-btns"><button type="button" class="shw-more">Подробнее</button>'
+                '<button type="button" class="shw-add" aria-label="%s">%s</button></span></div></div>'
+                '<span class="shw-fl"><img class="shw-img" src="/cut/%s.webp" alt="%s" width="%d" height="%d" loading="lazy" decoding="async"></span>'
                 '<span class="shw-nm">%s<small>%s сом</small></span></div>') % (
-            p[0], e(p[2]), e(SH_TAG[p[0]]), e(p[2]), nf(p[3]), "в наличии" if q > 0 else "под заказ · 4 дня",
+            p[0], p[1], e(p[2]), e(wm), e(tag), e(p[2]), "".join("<li>%s</li>" % e(f) for f in facts + ["Гарантия 1 год"]),
+            nf(p[3]), "in" if q > 0 else "out", "в наличии" if q > 0 else "под заказ · 4 дня",
             "В корзину" if q > 0 else "Подробнее", "+" if q > 0 else "→", SH_IMG.get(p[0], p[0]), e(p[2]), im[0], im[1], e(p[2]), nf(p[3]))
-    SHOW = ('<section class="shw" id="showcase"><div class="shw-head"><h2>Выберите свой принтер</h2><p><span class="shw-h1">Наведите на модель — цена и корзина рядом</span><span class="shw-h2">Листайте — цена и корзина рядом</span></p></div>'
-            '<div class="shw-row">' + "".join(_shi(p) for p in sh) + "</div></section>\n")
+    SHOW = ('<section class="shw" id="showcase"><div class="shw-head"><div><h2>Выберите свой принтер</h2>'
+            '<p><span class="shw-h1">Наведите на модель — она раскроется</span><span class="shw-h2">Листайте — модель раскроется</span></p></div>'
+            '<div class="shw-nav"><button type="button" class="shw-prev" aria-label="Предыдущая модель">←</button><span class="shw-cnt"><b>1</b> / %d</span>'
+            '<button type="button" class="shw-next" aria-label="Следующая модель">→</button></div></div>'
+            '<div class="shw-row">%s</div></section>\n') % (len(sh), "".join(_shi(p) for p in sh))
     css += """
-.shw{padding-top:88px}.shw-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:10px}
-.shw-head h2{font-size:clamp(26px,3vw,40px);letter-spacing:-.03em;margin:0}.shw-head p{margin:0;color:var(--mut);font-size:15px}
-.shw-row{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory;padding:26px 4px 34px;margin:0 -4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
-.shw-row::-webkit-scrollbar{display:none}
-.shw-it{position:relative;flex:0 0 232px;height:392px;scroll-snap-align:center;cursor:pointer;outline:0;-webkit-tap-highlight-color:transparent}
-.shw-card{position:absolute;inset:0;border-radius:30px;background:linear-gradient(165deg,#2A2A2E,#19191B);color:#fff;padding:24px 22px 20px;display:flex;flex-direction:column;
- opacity:0;transform:translateY(46px) scale(.9);transition:opacity .38s ease,transform .5s cubic-bezier(.2,.8,.2,1);box-shadow:0 34px 60px -28px rgba(29,29,31,.55);pointer-events:none}
-.shw-card b{font-family:'Unbounded',sans-serif;font-weight:700;font-size:17px;line-height:1.2;letter-spacing:-.02em;margin-top:8px}
-.shw-tag{font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#FF8A3D}
-.shw-bot{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
-.shw-pr{font-family:'Unbounded',sans-serif;font-weight:700;font-size:19px;letter-spacing:-.02em;line-height:1.15}
-.shw-pr small{font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;opacity:.7}
-.shw-pr i{display:block;font-style:normal;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;color:#7ED7A5;margin-top:4px;letter-spacing:0}
-.shw-add{flex:none;width:46px;height:46px;border-radius:15px;border:0;background:#FF6A13;color:#fff;font-size:26px;font-weight:500;line-height:1;cursor:pointer;display:grid;place-items:center;transition:transform .2s ease,background .2s ease}
-.shw-add:hover{transform:scale(1.08);background:#ff7d30}
-.shw-img{position:absolute;left:50%;top:104px;width:176px;height:176px;object-fit:contain;transform:translateX(-50%);z-index:2;
- transition:transform .5s cubic-bezier(.2,.8,.2,1),filter .4s ease;filter:drop-shadow(0 14px 14px rgba(29,29,31,.14));pointer-events:none}
-.shw-nm{position:absolute;left:0;right:0;top:300px;text-align:center;font-weight:800;font-size:14.5px;line-height:1.3;padding:0 10px;transition:opacity .25s ease}
-.shw-nm small{display:block;font-weight:700;font-size:13px;color:var(--mut);margin-top:3px}
-.shw-it.on .shw-card{opacity:1;transform:none;pointer-events:auto}
-.shw-it.on .shw-img{transform:translateX(-50%) translateY(-4px) scale(1.2);filter:drop-shadow(0 22px 20px rgba(0,0,0,.45))}
-.shw-it.on .shw-nm{opacity:0}
+.shw{padding-top:88px}.shw-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.shw-head h2{font-size:clamp(26px,3vw,40px);letter-spacing:-.03em;margin:0 0 8px}.shw-head p{margin:0;color:var(--mut);font-size:15px}
 .shw-h2{display:none}@media (hover:none){.shw-h1{display:none}.shw-h2{display:inline}}
-@media (max-width:640px){.shw{padding-top:56px}.shw-it{flex-basis:208px;height:366px}.shw-img{top:116px;width:150px;height:150px}.shw-nm{top:280px}.shw-row{padding-left:calc(50% - 104px);padding-right:calc(50% - 104px)}}
-@media (prefers-reduced-motion:reduce){.shw-card,.shw-img{transition:none}}
+.shw-nav{display:flex;align-items:center;gap:10px}.shw-nav button{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:18px;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.shw-nav button:hover{background:#1D1D1F;color:#fff;border-color:#1D1D1F}.shw-cnt{font-size:13.5px;font-weight:700;color:var(--mut);min-width:44px;text-align:center}.shw-cnt b{color:var(--ink)}
+.shw-row{display:flex;gap:6px;overflow-x:auto;padding:30px 4px 40px;margin:0 -4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.shw-row::-webkit-scrollbar{display:none}
+.shw-it{position:relative;flex:0 0 214px;height:430px;cursor:pointer;outline:0;-webkit-tap-highlight-color:transparent;transition:flex-basis .6s cubic-bezier(.2,.8,.2,1)}
+.shw-card{position:absolute;inset:0;border-radius:32px;background:radial-gradient(120% 90% at 85% 30%,rgba(255,106,19,.22),transparent 55%),linear-gradient(165deg,#2B2B2F,#17171A);color:#fff;padding:28px 28px 24px;
+ display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(46px) scale(.9);transition:opacity .4s ease,transform .6s cubic-bezier(.2,.8,.2,1);box-shadow:0 36px 64px -30px rgba(29,29,31,.6);pointer-events:none}
+.shw-wm{position:absolute;right:-14px;bottom:-46px;font-family:'Unbounded',sans-serif;font-weight:800;font-size:190px;line-height:1;letter-spacing:-.06em;color:rgba(255,255,255,.055);white-space:nowrap;pointer-events:none;
+ transform:translateX(40px);transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+.shw-tag{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#FF8A3D;position:relative}
+.shw-card b{font-family:'Unbounded',sans-serif;font-weight:700;font-size:21px;line-height:1.18;letter-spacing:-.03em;margin-top:10px;max-width:232px;position:relative}
+.shw-sp{list-style:none;margin:18px 0 0;padding:0;display:flex;flex-direction:column;gap:9px;max-width:232px;position:relative}
+.shw-sp li{font-size:14px;font-weight:600;color:rgba(255,255,255,.82);padding-left:20px;position:relative;opacity:0;transform:translateX(-14px);transition:opacity .45s ease,transform .5s cubic-bezier(.2,.8,.2,1)}
+.shw-sp li::before{content:"";position:absolute;left:0;top:7px;width:7px;height:7px;border-radius:50%;background:#FF6A13}
+.shw-bot{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;position:relative}
+.shw-pr{font-family:'Unbounded',sans-serif;font-weight:700;font-size:26px;letter-spacing:-.03em;line-height:1.1;white-space:nowrap}
+.shw-pr small{font-family:'Manrope',sans-serif;font-size:13px;font-weight:700;opacity:.7}
+.shw-pr i{display:block;font-style:normal;font-family:'Manrope',sans-serif;font-size:12.5px;font-weight:700;margin-top:6px;letter-spacing:0}.shw-pr i.in{color:#7ED7A5}.shw-pr i.out{color:#c9c9cf}
+.shw-btns{display:flex;gap:8px;align-items:center}
+.shw-more{height:48px;padding:0 18px;border-radius:16px;border:1px solid rgba(255,255,255,.22);background:transparent;color:#fff;font:800 13.5px 'Manrope',sans-serif;cursor:pointer;transition:background .2s}
+.shw-more:hover{background:rgba(255,255,255,.1)}
+.shw-add{flex:none;width:48px;height:48px;border-radius:16px;border:0;background:#FF6A13;color:#fff;font-size:26px;font-weight:500;line-height:1;cursor:pointer;display:grid;place-items:center;transition:transform .2s ease,background .2s ease}
+.shw-add:hover{transform:scale(1.08);background:#ff7d30}
+.shw-fl{position:absolute;left:50%;top:112px;width:170px;height:170px;transform:translate(-50%,0);z-index:2;pointer-events:none;
+ transition:left .6s cubic-bezier(.2,.8,.2,1),top .6s cubic-bezier(.2,.8,.2,1),width .6s cubic-bezier(.2,.8,.2,1),height .6s cubic-bezier(.2,.8,.2,1)}
+.shw-img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 14px 14px rgba(29,29,31,.14));transition:filter .4s ease,transform .25s ease-out;transform:translate(var(--tx,0),var(--ty,0))}
+.shw-nm{position:absolute;left:0;right:0;top:304px;text-align:center;font-weight:800;font-size:14.5px;line-height:1.3;padding:0 10px;transition:opacity .25s ease}
+.shw-nm small{display:block;font-weight:700;font-size:13px;color:var(--mut);margin-top:3px}
+.shw-it:not(.on):hover .shw-fl{top:104px}
+.shw-it.on{flex-basis:580px}
+.shw-it.on .shw-card{opacity:1;transform:none;pointer-events:auto}
+.shw-it.on .shw-wm{transform:none}
+.shw-it.on .shw-sp li{opacity:1;transform:none}
+.shw-it.on .shw-sp li:nth-child(1){transition-delay:.18s}.shw-it.on .shw-sp li:nth-child(2){transition-delay:.26s}.shw-it.on .shw-sp li:nth-child(3){transition-delay:.34s}.shw-it.on .shw-sp li:nth-child(4){transition-delay:.42s}
+.shw-it.on .shw-fl{left:calc(100% - 158px);top:58px;width:286px;height:286px;animation:shwfl 5s ease-in-out .7s infinite}
+.shw-it.on .shw-img{filter:drop-shadow(0 26px 22px rgba(0,0,0,.5))}
+.shw-it.on .shw-nm{opacity:0}
+@keyframes shwfl{0%,100%{margin-top:0}50%{margin-top:-10px}}
+@media (max-width:860px){
+ .shw{padding-top:56px}.shw-nav{display:none}.shw-row{scroll-snap-type:x mandatory;padding-left:calc(50% - 150px);padding-right:calc(50% - 150px)}
+ .shw-it{flex-basis:172px;height:500px;scroll-snap-align:center}.shw-it.on{flex-basis:300px}
+ .shw-card{padding:22px 20px 20px;border-radius:28px}.shw-card b{font-size:19px;max-width:none}
+ .shw-sp{margin-top:auto;gap:6px;max-width:none}.shw-sp li{font-size:13px}.shw-sp li:nth-child(n+3){display:none}
+ .shw-bot{margin-top:14px}.shw-pr{font-size:21px}.shw-more{display:none}
+ .shw-fl{top:150px;width:140px;height:140px}.shw-nm{top:310px;font-size:13.5px}
+ .shw-it.on .shw-fl{left:50%;top:108px;width:206px;height:206px}
+ .shw-wm{font-size:150px;bottom:auto;top:120px;right:-30px}
+}
+@media (prefers-reduced-motion:reduce){.shw-card,.shw-fl,.shw-it,.shw-sp li,.shw-wm{transition:none}.shw-it.on .shw-fl{animation:none}}
 """
     open(os.path.join(dist, "style.css"), "w", encoding="utf-8").write(css)
     SHJS = """<script>(function(){var row=document.querySelector('.shw-row');if(!row)return;var its=[].slice.call(row.querySelectorAll('.shw-it'));
-function on(el){its.forEach(function(x){x.classList.toggle('on',x===el)})}
-var touch=matchMedia('(hover:none)').matches;
-its.forEach(function(el){el.addEventListener('mouseenter',function(){if(!touch)on(el)});el.addEventListener('focus',function(){on(el)});
-el.addEventListener('click',function(ev){var pid=el.getAttribute('data-pid');var was=el.classList.contains('on');on(el);
-if(ev.target.closest('.shw-add')){var b=document.querySelector('.act[data-id="'+pid+'"] .addb');
-if(b&&!b.disabled&&!b.classList.contains('ask')&&!b.classList.contains('dis')){b.click();var a=ev.target.closest('.shw-add');a.textContent='✓';setTimeout(function(){a.textContent='+'},1100);return}}
-if(!was&&touch&&!ev.target.closest('.shw-add'))return;
-var c=document.querySelector('article.card[data-pid="'+pid+'"] .ph');if(c)c.dispatchEvent(new MouseEvent('click',{bubbles:true}))});
-el.addEventListener('keydown',function(ev){if(ev.key==='Enter')el.click()})});
-var t;row.addEventListener('scroll',function(){if(!touch)return;clearTimeout(t);t=setTimeout(function(){var m=row.getBoundingClientRect(),cx=m.left+m.width/2,best=null,bd=1e9;
-its.forEach(function(x){var r=x.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-cx);if(d<bd){bd=d;best=x}});if(best)on(best)},70)},{passive:true});
-on(its[0])})();</script>
+var cnt=document.querySelector('.shw-cnt b'),cur=-1,lock=0,touch=matchMedia('(hover:none)').matches;
+function on(i,scroll){i=(i+its.length)%its.length;if(i===cur)return;cur=i;its.forEach(function(x,k){x.classList.toggle('on',k===i)});if(cnt)cnt.textContent=i+1;lock=Date.now()+(scroll?1250:560);
+if(scroll)setTimeout(function(){var el=its[i],r=el.getBoundingClientRect(),m=row.getBoundingClientRect();row.scrollBy({left:r.left+r.width/2-(m.left+m.width/2),behavior:'smooth'})},touch?0:330)}
+function open(pid){var c=document.querySelector('article.card[data-pid="'+pid+'"] .ph'),pp=document.getElementById('ppage');if(c)c.dispatchEvent(new MouseEvent('click',{bubbles:true}));
+setTimeout(function(){if(!pp||!pp.classList.contains('on')){var u=document.querySelector('.shw-it[data-pid="'+pid+'"]').getAttribute('data-url');if(u)location.href=u}},120)}
+its.forEach(function(el,i){var tm;
+el.addEventListener('mouseenter',function(){if(touch)return;clearTimeout(tm);tm=setTimeout(function(){if(Date.now()>lock)on(i,true)},130)});
+el.addEventListener('mouseleave',function(){clearTimeout(tm);var im=el.querySelector('.shw-img');im.style.removeProperty('--tx');im.style.removeProperty('--ty')});
+el.addEventListener('mousemove',function(ev){if(touch||!el.classList.contains('on'))return;var r=el.getBoundingClientRect(),im=el.querySelector('.shw-img');
+im.style.setProperty('--tx',((ev.clientX-r.left)/r.width-.5)*-16+'px');im.style.setProperty('--ty',((ev.clientY-r.top)/r.height-.5)*-12+'px')});
+el.addEventListener('focus',function(){on(i,true)});
+el.addEventListener('click',function(ev){var pid=el.getAttribute('data-pid'),was=el.classList.contains('on');on(i,true);var a=ev.target.closest('.shw-add');
+if(a){var b=document.querySelector('.act[data-id="'+pid+'"] .addb');
+if(b&&!b.disabled&&!b.classList.contains('ask')&&!b.classList.contains('dis')&&!b.classList.contains('pick')){b.click();a.textContent='✓';setTimeout(function(){a.textContent='+'},1100);return}open(pid);return}
+if(ev.target.closest('.shw-more')){open(pid);return}
+if(was)open(pid)});
+el.addEventListener('keydown',function(ev){if(ev.key==='Enter')el.click();if(ev.key==='ArrowRight'){on(cur+1,true);its[cur].focus()}if(ev.key==='ArrowLeft'){on(cur-1,true);its[cur].focus()}})});
+var p=document.querySelector('.shw-prev'),n=document.querySelector('.shw-next');if(p)p.addEventListener('click',function(){on(cur-1,true)});if(n)n.addEventListener('click',function(){on(cur+1,true)});
+var t;row.addEventListener('scroll',function(){if(!touch)return;clearTimeout(t);t=setTimeout(function(){if(Date.now()<lock)return;var m=row.getBoundingClientRect(),cx=m.left+m.width/2,best=0,bd=1e9;
+its.forEach(function(x,k){var r=x.getBoundingClientRect(),d=Math.abs(r.left+r.width/2-cx);if(d<bd){bd=d;best=k}});on(best,false)},90)},{passive:true});
+on(0,false)})();</script>
 """
     kk = markup.index('<section id="printers"')
     markup = markup[:kk] + SHOW + markup[kk:]
