@@ -55,6 +55,7 @@ for _pp, _pv in PROMO.items():
             _t = _a.group(0).replace('data-p="%d"' % PROMO_OLD[_pp], 'data-p="%d"' % _pv["p"])
             _t = re.sub(r"(<div class=\"pr\"><b>)[^<]*(</b>)", lambda m: m.group(1) + "{:,}".format(_pv["p"]).replace(",", "\u00a0") + m.group(2), _t, count=1)
             markup = markup[:_a.start()] + _t + markup[_a.end():]
+js = "window.GIFT = %s;\n" % json.dumps({_pp: "+ " + PROMO[_pp]["gift"] for _pp in PROMO_OLD}, ensure_ascii=False) + js
 open(os.path.join(dist, "app.js"), "w", encoding="utf-8").write(js)
 ver = hashlib.sha1((css + js).encode()).hexdigest()[:8]
 

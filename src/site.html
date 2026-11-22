@@ -4477,6 +4477,7 @@ if (location.hash.startsWith("#p/")) setTimeout(() => openPage(location.hash.sli
     { q: "Какой бюджет?", a: [["До 35 000 сом", "lo"], ["До 70 000 сом", "mid"], ["Выше 70 000 сом", "hi"]] },
   ];
   const WHY = {
+    u1: "Четыре печатающие головы — многоцветная печать без долгой смены пластика.",
     a1mini: "Компактный и простой — хороший первый принтер для небольших моделей.",
     a1minic: "Компактный принтер с AMS lite — печать в несколько цветов.",
     a1: "Универсальная модель с полем 256 мм — подходит для большинства задач.",
@@ -4493,19 +4494,38 @@ if (location.hash.startsWith("#p/")) setTimeout(() => openPage(location.hash.sli
   let ans = [], i = 0;
   const ok = (id) => BASE.has(id) && !isDel(id) && !item(id).off && !item(id).ask;
   const inStock = (id) => { const st = stockOf(id); return st == null || st > 0; };
+  /* размер поля: s — 180 мм, m — 256 мм, l — 330 мм; mc — многоцветная печать; eng — закрытый корпус для инженерных пластиков */
+  const SPEC = {
+    a1mini: { sz: "s" }, a1minic: { sz: "s", mc: 1 }, a1: { sz: "m" }, a1c: { sz: "m", mc: 1 },
+    a2lcn: { sz: "l", mc: 1 }, a2l: { sz: "l", mc: 1 }, p1s: { sz: "m", mc: 1, eng: 1 },
+    p2s: { sz: "m", mc: 1, eng: 1 }, x2d: { sz: "m", mc: 1, eng: 1, pro: 1 }, h2d: { sz: "l", mc: 1, eng: 1, pro: 1 },
+    u1: { sz: "m", mc: 1, heads: 1 },
+  };
   function pick() {
     const [use, size, color, mat, bud] = ans;
-    let o;
-    if (mat === "eng") o = bud === "hi" ? ["x2d", "p2s", "p1s"] : ["p1s", "p2s", "x2d"];
-    else if (size === "l") o = bud === "hi" ? ["a2l", "a2lcn", "x2d"] : ["a2lcn", "a2l", "p1s"];
-    else if (size === "s" && bud === "lo") o = color === "y" ? ["a1minic", "a1mini", "a1"] : ["a1mini", "a1", "a1minic"];
-    else if (bud === "lo") o = ["a1", "a1mini", "a1c"];
-    else if (use === "biz" && bud === "hi") o = ["p2s", "p1s", "a2l"];
-    else o = color === "n" ? ["a1", "a1c", "a2l"] : ["a1c", "a1", "a2l"];
-    o = o.filter(ok);
-    const best = o.find(inStock) || o[0];
+    const lo = bud === "lo" ? 0 : bud === "mid" ? 35000 : 70000;
     const cap = bud === "lo" ? 35000 : bud === "mid" ? 70000 : Infinity;
-    return { best, alt: o.filter((x) => x !== best && inStock(x) && item(x).p <= cap)[0] };
+    let all = Object.keys(SPEC).filter(ok);
+    if (all.some(inStock)) all = all.filter(inStock);
+    const score = (id) => {
+      const sp = SPEC[id], p = item(id).p; let s = 0;
+      if (p > lo && p <= cap) s += 20;                 // в бюджете — главное
+      else if (p > cap) s -= 40;                       // дороже бюджета — почти никогда
+      else s -= (lo - p) / 5000;                       // дешевле выбранного бюджета — ниже в списке
+      if (size === "l") s += sp.sz === "l" ? 15 : -15;
+      if (size === "s" && sp.sz === "s") s += 3;
+      if (mat === "eng") s += sp.eng ? 15 : -15;
+      if (color === "y") s += sp.mc ? 8 : -8;
+      if (color === "u" && sp.mc) s += 2;
+      if (color === "y" && sp.heads && mat !== "eng") s += 2;
+      if ((use === "biz" || use === "earn") && (sp.eng || sp.pro)) s += 3;
+      if (use === "biz" && sp.pro) s += 2;
+      if ((use === "edu" || use === "home") && color === "n" && !sp.eng && bud !== "hi") s += 2;
+      return s;
+    };
+    const o = all.map((id) => [id, score(id)]).sort((a, b) => b[1] - a[1] || item(a[0]).p - item(b[0]).p).map((x) => x[0]);
+    const best = o[0];
+    return { best, alt: o.filter((x) => x !== best && item(x).p <= cap)[0] };
   }
   function show() {
     back.style.visibility = i > 0 ? "visible" : "hidden";
@@ -4528,7 +4548,7 @@ if (location.hash.startsWith("#p/")) setTimeout(() => openPage(location.hash.sli
     let h = '<div class="qres"><div class="qimg">' + (it.html || "") + "</div><div>" +
       '<p class="qwhy">' + (WHY[r.best] || it.d) + "</p>" +
       '<div class="pr"><b>' + nfmt(it.p) + "</b><span>сом</span></div>" +
-      '<p class="qgift">+ 1 кг пластика в подарок</p></div></div>' +
+      '<p class="qgift">' + ((window.GIFT && GIFT[r.best]) || "+ 1 кг пластика в подарок") + "</p></div></div>" +
       '<div class="qacts"><div class="act" data-id="' + r.best + '" data-n="' + it.n.replace(/"/g, "&quot;") + '" data-p="' + it.p + '"></div>' +
       '<a class="btn ghost" href="https://wa.me/' + wa + "?text=" + encodeURIComponent(txt) + '" target="_blank" rel="noopener">Обсудить в WhatsApp</a></div>';
     if (r.alt) h += '<p class="qalt">Ещё вариант: <b>' + item(r.alt).n + "</b> — " + nfmt(item(r.alt).p) + " сом</p>";
