@@ -989,6 +989,7 @@ if (location.hash.startsWith("#p/")) setTimeout(() => openPage(location.hash.sli
   ];
   const WHY = {
     u1: "Четыре печатающие головы — многоцветная печать без долгой смены пластика.",
+    cr5: "Четыре головы и закрытая камера с подогревом — многоцветная печать и инженерные пластики.",
     a1mini: "Компактный и простой — хороший первый принтер для небольших моделей.",
     a1minic: "Компактный принтер с AMS lite — печать в несколько цветов.",
     a1: "Универсальная модель с полем 256 мм — подходит для большинства задач.",
@@ -1011,6 +1012,7 @@ if (location.hash.startsWith("#p/")) setTimeout(() => openPage(location.hash.sli
     a2lcn: { sz: "l", mc: 1 }, a2l: { sz: "l", mc: 1 }, p1s: { sz: "m", mc: 1, eng: 1 },
     p2s: { sz: "m", mc: 1, eng: 1 }, x2d: { sz: "m", mc: 1, eng: 1, pro: 1 }, h2d: { sz: "l", mc: 1, eng: 1, pro: 1 },
     u1: { sz: "m", mc: 1, heads: 1 },
+    cr5: { sz: "m", mc: 1, eng: 1, heads: 1 },
   };
   function pick() {
     const [use, size, color, mat, bud] = ans;
@@ -1028,9 +1030,10 @@ if (location.hash.startsWith("#p/")) setTimeout(() => openPage(location.hash.sli
       if (mat === "eng") s += sp.eng ? 15 : -15;
       if (color === "y") s += sp.mc ? 8 : -8;
       if (color === "u" && sp.mc) s += 2;
-      if (color === "y" && sp.heads && mat !== "eng") s += 2;
+      if (color === "y" && sp.heads) s += 4;                 // несколько голов — многоцвет без отходов
+      if (id === "a1" || id === "p2s") s += 3;              // хиты продаж
       if ((use === "biz" || use === "earn") && (sp.eng || sp.pro)) s += 3;
-      if (use === "biz" && sp.pro) s += 2;
+      if (use === "biz" && sp.pro) s += 5;
       if ((use === "edu" || use === "home") && color === "n" && !sp.eng && bud !== "hi") s += 2;
       return s;
     };

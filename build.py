@@ -231,8 +231,19 @@ FTR = ('<footer><div class="wrap fg"><div><a class="logo" href="/"><span class="
 # ---------- подробности из карточек-«историй» главной (шаблоны pp-*) — на страницы товаров ----------
 DET_ALIAS = {"a1c": "a1", "a2lcn": "a2l"}
 def _tx(x): return html.unescape(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", x))).strip()
+# характеристики для товаров без «истории» на сайте (источник: flashforge.com)
+EXTRA_SPEC = {"cr5": {
+    "rows": [("Область печати", "256 × 256 × 256 мм"), ("Печатающие головы", "4 независимые головы — до 4 цветов или материалов в одной печати"),
+             ("Корпус", "закрытый, активный подогрев камеры до 65 °C"), ("Температура сопла", "до 320 °C"),
+             ("Материалы", "PLA, PETG, TPU, ABS, ASA, PA-CF, PET-CF, PPS-CF"), ("Скорость", "печать до 300 мм/с, перемещение до 600 мм/с")],
+    "feats": [("Четыре головы вместо смены пластика", "Каждый цвет печатает своя голова: не нужно прочищать сопло при смене цвета, поэтому почти нет отходов и печать идёт быстрее, чем на принтерах с одной головой."),
+              ("Закрытая камера с подогревом", "Камера греется до 65 °C — можно печатать ABS, ASA и пластики с углеволокном без трещин и отслоений.")]}}
 def detail(pid, name, fil):
     m = re.search(r'<template id="pp-%s">(.*?)</template>' % re.escape(DET_ALIAS.get(pid, pid)), markup, re.S)
+    if not m and pid in EXTRA_SPEC:
+        x = EXTRA_SPEC[pid]
+        return ("<h2>Характеристики %s</h2>" % e(name) + '<table class="pgspec">' + "".join("<tr><th>%s</th><td>%s</td></tr>" % (e(a_), e(b_)) for a_, b_ in x["rows"]) + "</table>"
+                + "<h2>Чем хорош %s</h2>" % e(name) + '<div class="pgfeat">' + "".join("<div><h3>%s</h3><p>%s</p></div>" % (e(t), e(p_)) for t, p_ in x["feats"]) + "</div>")
     if not m: return ""
     g = lambda cls, sec: [_tx(v) for v in re.findall(r'<(?:p|h2|div)\b[^>]*class="[^"]*\b%s\b[^"]*"[^>]*>(.*?)</(?:p|h2|div)>' % cls, sec, re.S)]
     rows, feats, uses = [], [], ""
