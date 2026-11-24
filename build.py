@@ -10,6 +10,10 @@ WA = "996559992306"
 PHONE = "+996 559 992 306"   # WhatsApp
 TEL = "996505400655"; TELF = "+996 505 400 655"   # телефон для звонков (как в 2ГИС)
 ADDR = "Бишкек, ул. Туголбай Ата, 32Б"
+MAPQ = "%D1%83%D0%BB.+%D0%A2%D1%83%D0%B3%D0%BE%D0%BB%D0%B1%D0%B0%D0%B9+%D0%90%D1%82%D0%B0,+32%D0%91,+%D0%91%D0%B8%D1%88%D0%BA%D0%B5%D0%BA"  # «ул. Туголбай Ата, 32Б, Бишкек» (3D HOUSE пока нет в Google Картах как компании)
+MAPURL = "https://www.google.com/maps/search/?api=1&query=" + MAPQ
+MAP = ('<div class="gmap"><iframe src="https://www.google.com/maps?q=' + MAPQ + '&hl=ru&z=16&output=embed" title="3D HOUSE на Google Картах" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>'
+       '<p><a href="' + MAPURL + '" target="_blank" rel="noopener" style="text-decoration:underline;text-underline-offset:3px">Открыть в Google Картах — построить маршрут</a></p>')
 TITLE = "3D HOUSE — 3D-принтеры Bambu Lab, пластик и сервис в Бишкеке"
 TITLE = "3D-принтеры в Бишкеке — купить Bambu Lab | 3D HOUSE"
 DESC = ("3D-принтеры в Бишкеке: Bambu Lab A1, A2L, P1S, X2D в наличии. Шоурум, гарантия 1 год, рассрочка, "
@@ -176,7 +180,7 @@ STORE = {"@context": "https://schema.org", "@type": "Store", "@id": SITE + "/#st
          "telephone": "+" + TEL, "priceRange": "200–118000 KGS", "currenciesAccepted": "KGS",
          "address": {"@type": "PostalAddress", "streetAddress": "ул. Туголбай Ата, 32Б", "addressLocality": "Бишкек", "addressCountry": "KG"},
          "openingHoursSpecification": {"@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], "opens": "10:00", "closes": "20:00"},
-         "sameAs": ["https://instagram.com/3dhouse.kg"], "areaServed": {"@type": "Country", "name": "Кыргызстан"}}
+         "hasMap": MAPURL, "sameAs": ["https://instagram.com/3dhouse.kg"], "areaServed": {"@type": "Country", "name": "Кыргызстан"}}
 ld = lambda o: '<script type="application/ld+json">' + json.dumps(o, ensure_ascii=False) + "</script>\n"
 WEBSITE = {"@context": "https://schema.org", "@type": "WebSite", "@id": SITE + "/#site", "url": SITE + "/", "name": "3D HOUSE", "alternateName": ["3dhouse.kg", "3Д Хаус"], "inLanguage": "ru", "publisher": {"@id": SITE + "/#store"}}
 
@@ -185,6 +189,7 @@ hero = re.search(r'class="heroimg"[^>]*>\s*<img[^>]*src="([^"]+)"', markup)
 
 # ---------- страницы товаров ----------
 PCSS = """
+.gmap{border-radius:20px;overflow:hidden;border:1px solid var(--line);height:400px;margin:14px 0 10px;background:var(--alt)}.gmap iframe{width:100%;height:100%;border:0;display:block}
 .howto{padding-left:22px;line-height:1.65}.howto li{margin:0 0 8px}
 
 .pg{max-width:1080px;margin:0 auto;padding:28px 22px 80px}
@@ -420,11 +425,11 @@ page("/voprosy/", "Вопросы и ответы о 3D-принтерах и п
      ld({"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in FAQ]}) + crumb2("Вопросы и ответы", "/voprosy/"))
 page("/kontakty/", "Контакты и адрес шоурума 3D HOUSE в Бишкеке",
      "Шоурум 3D-принтеров 3D HOUSE: %s. Ежедневно 10:00–20:00. Телефон %s, WhatsApp %s." % (ADDR, TELF, PHONE),
-     '<p class="crumbs"><a href="/">Главная</a> / Контакты</p><h1>Контакты 3D HOUSE</h1>'
+     ('<p class="crumbs"><a href="/">Главная</a> / Контакты</p><h1>Контакты 3D HOUSE</h1>'
      '<p class="lead">Шоурум 3D-принтеров и пластика в Бишкеке. Приезжайте посмотреть принтеры вживую.</p>'
-     "<h2>Адрес</h2><p>%s</p><h2>Часы работы</h2><p>Ежедневно, 10:00–20:00</p>"
+     "<h2>Адрес</h2><p>%s</p>MAPHERE<h2>Часы работы</h2><p>Ежедневно, 10:00–20:00</p>"
      '<h2>Телефон</h2><p><a href="tel:+%s">%s</a></p><h2>WhatsApp</h2><p><a href="https://wa.me/%s">%s — написать</a></p>'
-     '<h2>Instagram</h2><p><a href="https://instagram.com/3dhouse.kg">@3dhouse.kg</a></p>' % (ADDR, TEL, TELF, WA, PHONE) + SHIP,
+     '<h2>Instagram</h2><p><a href="https://instagram.com/3dhouse.kg">@3dhouse.kg</a></p>' % (ADDR, TEL, TELF, WA, PHONE)).replace("MAPHERE", MAP) + SHIP,
      ld(STORE) + crumb2("Контакты", "/kontakty/"))
 
 # ---------- главная (со ссылками на все страницы) ----------
